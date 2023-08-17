@@ -62,9 +62,9 @@ Examples of Esperanto nouns:
 
 - `katido` (子猫)  
 
-- `真cao` (truth)
+- `vero` (truth)
 
-- `真cao` (真実)
+- `vero` (真実)
 
 
 
