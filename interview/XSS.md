@@ -1,20 +1,52 @@
+# Cross-Site Scripting (XSS) Attacks and Defenses
 
-## XSS攻击注入点
-- HTML 节点内容
-```html
-<div>
-#{content}
-</div>
-```
-- HTML属性
-```html
-<img src="#{image}">
-<!-- const image="1\" onerror=\"alert(1)"; -->
+Cross-site scripting (XSS) is a web security vulnerability that allows attackers to inject malicious client-side scripts into web pages. XSS attacks exploit the trust websites have in users by injecting malicious code into the DOM through improper sanitization of user input. A successful XSS attack can lead to session hijacking, phishing, defacement and more.
 
-<img src="1" onerror="alert(1)"/>
-```
-- JavaScript代码
-```javascript
+There are three main types of XSS attacks:
+
+1. **Reflected XSS**: The malicious script comes from the current HTTP request. The attacker needs to trick the victim into clicking a URL to execute the attack. Reflected XSS can be prevented by sanitizing user input.
+
+    ```
+    http://vulnerable.com/search?q=<script>alert(1)</script>
+    ```
+
+2. **Stored XSS**: The malicious script comes from the website's database. The script is inserted into the DOM when the page loads. Stored XSS can be prevented by sanitizing user input before storing it in the database.
+
+    ```
+    <script>var maliciousCode = '#{storedScript}';</script> 
+    ```
+
+3. **DOM-based XSS**: The vulnerability exists in client-side code rather than server-side. The DOM environment can be manipulated to execute injected scripts. DOM XSS can be prevented by sanitizing data before passing it to the DOM.
+
+    ```js
+    const userInput = window.location.href.split('=')[1] 
+    document.getElementById("message").innerText = userInput;
+    ```
+
+## Injection Points
+
+The most common injection points for XSS attacks include:
+
+- **HTML node content**: An attacker can inject scripts into HTML nodes like `div`, `span`, etc.
+
+    ```html
+    <div>#{content}</div> 
+    ```
+
+  This can be prevented by escaping characters like `<` and `>` with HTML entities.
+
+- **HTML attributes**: Scripts can be injected into tag attributes like `src`, `onerror`, etc.
+
+    ```html
+    <img src="#{image}">
+    <!-- const image="1\" onerror=\"alert(1)"; -->
+    ```
+
+  Attribute values should be sanitized to prevent splitting by quotes.
+
+- **JavaScript code**: User input inserted into JS code can break out of data literals and execute arbitrary code.
+
+```html
 <script>
 	var data = "#{content}";
 	// const content = "hello\";alert(1);";
@@ -22,21 +54,16 @@
 </script>
 ```
 
-- 富文本
-1. 富文本会保留HTML
-2. HTML就会存在XSS攻击的风险
+  Input should be sanitized before interpolating into JS.
 
+- **Rich text editors**: Unfiltered HTML input can lead to XSS if rendered on page. A whitelist approach should be used to filter allowed tags and attributes.
 
+## Defenses
 
-## 如何防御XSS攻击
-- 浏览器自带防御，可以通过`set("X-XSS-Protection", 0);`关闭防御。
-1. 它能够拦截参数中出现HTML内容或者属性的XSS攻击，但是无法检测到JavaScript的代码和富文本中出现的情况。
-2. 并不是所有浏览器都支持这样的防御机制，不能完全依赖这种方式来解决XSS攻击;
-- 进行HTML转义：如`<`转义为：`&lt;`, `>`转义为：`&gt;`，这样程序就不会把这些符号当作是有效的HTML标签 
-- 解决HTML属性的XSS攻击，转义双引号`"`, 单引号`'`等，防止其属性内容被拆分。
-- 对JavaScript的code进行JSON.stringify(), 用于转义所有非法字符。以JavaScript中XSS攻击带来的问题。
-- 对富文本中可能出现的所有标签进行白名单化管理，在富文本的数据存储前，对所有标签进行过滤。
-1. 
+There are several key defenses against XSS attacks:
+
+- **Input validation and escaping**: Special characters like `<`, `>`, `"`, `'` should be escaped on output based on context.
+- **Whitelisting**: Only allow specific HTML tags and attributes from rich text input. Disallow inline JS execution.
 ```javascript
 const whitelist = {
 	"img": ["src"],
@@ -45,32 +72,37 @@ const whitelist = {
 };
 
 $("*").each((index, elem) => {
-	if (!whitelist[elem.name]) {
-		$(elem).remove();
-		return;
-	}
-	
-	for (var attr in elem.attribs) {
-		if (whitelist[elem.name].indexOf(attr) === -1) {
-			$(elem).attr(attr, null);
-		}
-	}
+    if (!whitelist[elem.name]) {
+        $(elem).remove();
+        return;
+    }
+
+    for (var attr in elem.attribs) {
+        if (whitelist[elem.name].indexOf(attr) === -1) {
+            $(elem).attr(attr, null);
+        }
+    }
 });
 ```
-2. 白名单定义的不好可能会对业务产生影响。
-- 使用一些开源的xss js脚本
+- **Content Security Policy (CSP)**: An HTTP header that restricts resources the page can load/execute to an allowed list. Can disable unsafe inline/eval.
+```
+Content-Security-Policy: default-src 'self'; script-src 'nonce-EDNnf03nceIOfn39fn3e9h3sdfa'
+```
+- **Security headers**: Headers like `X-XSS-Protection` can enable browser XSS filters. But should not be solely relied upon.
+- **Sanitization libraries**: Libraries like DOMPurify can sanitize HTML by only allowing whitelisted tags/attributes and disallowing malicious code.
 
-## CSP(Content Security Policy) - 用于指定哪些内容可以执行
-- 是一个http的header
-- child-src connect-src default-src
-- font-src frame-src img-src
-- manifest-src media-src object-src
-- script-src style-src worker-src
+A strong XSS defense requires a combination of the above defenses. The key is to never trust user input and escape/encode output based on context.
 
-- <host-source> <scheme-source> 'self'
-- 'unsafe-inline' 'unsafe-eval' 'none'
-- 'nonce-<base64-value>' '<hash-source>`
-- 'strict-dynamic'
+## Secure Development Practices
 
-Content-Security-Policy: default-src 'self' http://google.com; connect-src 'none'
+Proper training of developers is critical to avoid common XSS pitfalls:
 
+- Never insert untrusted data into HTML, JS or URLs without sanitization
+- Don't rely on blacklisting. Use whitelists for rich text input
+- Disable inline JS execution and use CSPs
+- Use security headers and escape all output contexts
+- Keep frameworks, libraries and dependencies up to date
+- Test extensively for XSS vulnerabilities using automation
+- Adopt a zero trust approach to user input
+
+A holistic approach to security is required to minimize the risk of XSS. This includes proper developer education, secure coding practices, automated testing and runtime defenses like sanitization and CSPs.
