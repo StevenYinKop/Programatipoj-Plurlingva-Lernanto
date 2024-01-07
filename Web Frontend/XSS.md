@@ -84,6 +84,7 @@ $("*").each((index, elem) => {
     }
 });
 ```
+- **Third Party Library**
 - **Content Security Policy (CSP)**: An HTTP header that restricts resources the page can load/execute to an allowed list. Can disable unsafe inline/eval.
 ```
 Content-Security-Policy: default-src 'self'; script-src 'nonce-EDNnf03nceIOfn39fn3e9h3sdfa'
