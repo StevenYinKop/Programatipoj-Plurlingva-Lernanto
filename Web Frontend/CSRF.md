@@ -1,13 +1,16 @@
 # CSRF
-## Cross Site Reuqest Forgery(跨站请求伪造)
-利用Cookie保存了用户的身份
+> Cross Site Reuqest Forgery(跨站请求伪造)
+> (CSRF) is a web vulnerability that allows attackers to perform unauthorized actions on a web application in an authorized user's context. It exploits the browser's same-origin policy and the inherent trust websites have in authenticated users' session cookies. Through various techniques, CSRF tricks users into inadvertently loading malicious requests originating from the attacker's website, but attributed to the victim's authenticated session.
 
-用户打开了一个第三方网页，可视的内容是人畜无害的。但是我回到原来的网页时，在原网站上以我的名义做了一系列我所不知情的操作。(`one click attack`)
+## CSRF Attack Anatomy
+In a CSRF attack, the victim first authenticates to the vulnerable target web application, which establishes a trusted session cookie. The victim then visits, views or interacts with a separate attacker-controlled site. This could be through an email link, instant message, posting, advertisement or other medium.
 
-### POST请求需要构造form表单进行。
-一旦用户的浏览器被弹窗，攻击者就可能利用这样一个隐藏的`iframe`以当前用户的名义进行一系列的操作。
+The attacker's site contains a crafted `URL` or `hidden HTML` that triggers a forged request to the target site to perform an action as the victim. As the victim is still authenticated to the target, this request will carry the user's session cookie and appear valid. Typical actions include **funds transfers**, **changing account details**, **content deletion** and **privilege escalation**.
 
-`form`的`target`如果是一个`iframe`的`name`的话，表单会在`iframe`页面中进行提交和跳转。但是`iframe`的`display`是`none`，所以这个过程对用户是不可见的。
+### Submitting a form that posts to the target site - The form is submitted via JavaScript without any visible UI using the victim's cookies.(`one click attack`)
+the attacker may use such a hidden `iframe` to perform a series of operations in the name of the current user.
+
+If the `target` of `form` is the `name` of an `iframe`, the form will be submitted and jumped in the `iframe` page. But the `display` of `iframe` is `none`, so this process is invisible to the user.
 ```html
 <body>
 <script>
@@ -27,7 +30,7 @@
 </script>
 </body>
 ```
-### Get请求相对更容易一些，只需要构造请求的URL和params
+### Persuading the victim to click a crafted link - The link navigates the victim to the target site with a malicious payload in parameters.
 ```html
 <body>
 <a href="http://bankserver/transfer?clientId=111&amount=10000&description=stupidDesign">
@@ -35,54 +38,75 @@
 </a>
 </body>
 ```
-只要用户点击了这个链接，就会通过GET请求向服务器发送get请求。
+As long as the user clicks on this link, a get request will be sent to the server through a `GET` request.
 
-### 不需要点击也可以攻击
+
+### Loading a page with a malicious image URL - The image tag src attribute triggers a GET request to the target site, which means you even don't need to click any buttons, the GET request will be triggered automatically.
 ```html
 <body>
 <img src="http://bankserver/transfer?clientId=111&amount=10000&description=stupidDesign" />
 </body>
 ```
-这样的话用户甚至不需要点击任何的事情，只要访问页面，就会遭到攻击。
 
-### 配合XSS攻击，向页面中插入链接 
+### Stored XSS to inject a CSRF payload - Stored scripts can inject forms or links that trigger automatically for other users.
 ```html
 <body>
 <img src="http://bankserver/addComment?comment=<a href='https://some.phishing.websites/click_and_delete_all_your_data_!'>Click me!</a>" />
 </body>
 ```
-一旦执行成功，用户会在源网站发布一条评论，所有点击评论中链接的其他用户，都会被里面设计的一些恶意代码波及到。
 
-## CSRF攻击的危害
-- 利用用户的登录态
-- 用户并不知情
-- 完成业务请求
-
-- 盗取用户资金
-- 冒充用户发帖背锅
-- 损坏网站名誉
+## The impact of a CSRF attack depends on the function of the targeted application and privileges of the victim's session. Some potential impacts include:
+- Financial - Transferring funds, trading stocks, money laundering.
+- Account Takeover - Changing account email, password, privileges.
+- Data Loss - Deleting content, posts or messages.
+- Reputation Damage - Posting offensive content as a user.
+- Service Abuse - Sending spam, DDOS participation.
+- Session Hijacking - Stealing session cookies via scripts.
 
 
-## CSRF攻击的防御方式
-### CSRF攻击的原理
-1. `user`在A网站进行登录
-2. A网站认证了`user`的身份，并且使用`Cookie`保存了用户态
-3. B网站通过构造链接、隐藏表单等方式，携带A网站的`Cookie`，冒充`user`对A网站进行访问。以达到目的。
+## CSRF Attack Defense Mechanisms
+> To prevent CSRF attacks, state changing requests must be verified to originate from the site's authorized UI flows, not cross-origin requests.
+### CSRF Attack Mechanisms
+1. Victim signed in the `WEBSITE A`
+2. `WEBSITE A` authenticated the victim and save user's `session` via `cookies.`
+3. `WEBSITE EVIL` used a crafted URL or hidden HTML, pretends to be a `user` to access `WEBSITE A`.
 
-### 从CSRF攻击中的几个关键点入手
-1. B网站向A网站发送请求
-2. 带A网站的`Cookie`
-3. 这个请求不会走A网站的前端
-4. `http headers`的`referer`中包含B网站的信息
+### Key points during CSRF
+1. `WEBSITE EVIL` sends requests to `WEBSITE A`.
+2. `WEBSITE EVIL` carries  `WEBSITE A`'s `Cookie`.
+3. This request was not initiated from `WEBSITE A`'s page, but from `WEBSITE EVIL`'s page
+4. `http headers`'s `referer` contains the `URL` of `WEBSITE EVIL`
 
-### 防御方式
-1. 设置`Cookie`的`sameSite`属性为`strict`，意思是从第三方网站发送到A网站的请求不会将`cookie`一并携带至服务器。
-   - 弊端：1. 浏览器的支持不够完善。2. 如果服务器支持匿名用户的一些操作，B网站仍然可以向A网站发送钓鱼链接并且成功绕过验证。
-2. 在A网站的前端加入一些验证信息
-   1. 前后端进行改造以增加验证码的功能。
-      - 弊端：会影响一些用户体验。
-   2. 前端加入token，生成一个随机字符串，让攻击者发起请求时，没有办法获得到这个token，每一次提交时用这个token来进行验证。
-      - 后端生成token，返回给前端
-      - 前端将token存在cookie和另一个可以获得的地方（如input-hidden或meta等）。
-      - 表单提交时，后端校验cookie中的token和表单提交的token进行校验。
-3. 验证referer是不是来自自己的前端网站，禁止来自第三方网站的请求。
+### Preventing CSRF Vulnerabilities
+> To prevent CSRF attacks, state changing actions must verify the request originated from the real UI flow, not a cross-origin call.
+#### CSRF Tokens
+Generate randomized, unique tokens that are required to be submitted with state changing requests. The server validates the token which thwarts forged requests.
+- Verify tokens match on both client and server side.
+- Bind tokens to the user session with server side storage.
+- Rotate CSRF tokens during authentication state change. 
+#### SameSite Cookie Attribute
+Cookies can be configured with a SameSite attribute that prevents the browser from sending them in cross-origin requests from third party sites.
+
+- Set SameSite to Lax or Strict depending on site functionality.
+- Falls back to CSRF tokens if SameSite not **supported** by browser.
+
+#### Referer Header Check
+The Referer header indicates the source site of a request. Checking that the Referer comes from your own origin can prevent CSRF.
+
+- However, Referer can be spoofed or not sent at all.
+- Should not be only line of defense.
+
+#### Re-authentication for Sensitive Actions
+Require users re-enter credentials for high risk state changes like account recovery, password change, etc. This adds user interaction to the flow.
+
+#### CAPTCHA
+Challenge–response tests like CAPTCHA prompt user interaction before high risk actions. This prevents automated CSRF exploits.
+
+### Secondary CSRF Defenses
+Additional measures to minimize attack surface:
+
+- Avoid `GET` requests for state changes - Use `POST` which cannot be forged `cross-origin`.
+- Sanitize rich text editors - Prevent `XSS` flaws which could inject `CSRF` payloads.
+- Rotate session identifier with auth changes - Prevents session fixation.
+- Limit credentials in `CORS` requests - Set withCredentials false where not needed.
+- Temporary identifier binding - Bind user action to temp ID to prevent reuse.
