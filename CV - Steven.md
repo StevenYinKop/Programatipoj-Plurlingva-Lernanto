@@ -5,7 +5,7 @@ url: https://www.yuque.com/stevenyin/liv/gmtb2g5vch39lz5a
 
 # Steven Yin
 
-**Websites**: [LinkedIn](https://www.linkedin.com/in/steven-yin/), [Github](https://github.com/CinCommon)
+**Websites**: [LinkedIn](https://www.linkedin.com/in/steven-yin/), [Github](https://github.com/StevenYinKop)
 
 **Contact Information**: yinzifancn@gmail.com
 
@@ -23,7 +23,7 @@ url: https://www.yuque.com/stevenyin/liv/gmtb2g5vch39lz5a
 ## Experiences
 
 - **BMW ArcherMind Information Technology Co., Ltd.**
-  - **2021.12 - PRESENT**
+  - **2021.12 - 2023.10**
   - ***DevOps & Scrum Master***
     - Collaborated with global cross functional teams on the development of Location Service, utilized AWS, Terraform, Java, Python, and Node.js. This product is used in BMW car ID5, 6, 7, 8 infotainment systems, MyBMW App, Rolls-Royce App, and some dealer websites.
     - Involved in the development of data cleansing processes for the global market, utilizing technologies such as AWS MWAA (Airflow), AWS MSK (Kafka), BMW Cloud Data Hub, Terraform, and AWS OpenSearch Service.
