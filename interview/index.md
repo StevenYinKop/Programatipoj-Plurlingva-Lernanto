@@ -82,6 +82,58 @@ public class RandomStringGenerator<T> implements Iterable<T> {
 lower/higher
 floor/ceiling
 
+函数式编程 ->
+immutable/pure
+lazy
+safety - monad 架构
+
+
+### Optional<T>的作用?
+### FunctionInterface在做什么?
+### 说说你理解的函数式编程
+> (期望类型是可以推导的)
+### 什么是Monad架构
+### 如何实现管道和流?
+
+
+OOP - 现实世界的投影
+Functional Programming - 用函数写程序
+
+Functional Programming 的 **核心:计算**:
+1. 没有副作用
+2. 并行
+3. 数学证明
+4. 安全
+5. 复用
+
+流计算的类型设计: Java中使用泛型
+
+Optional<T>减轻程序员的负担, 让编程的过程更加安全.
+
+#### Monad设计模式:
+> A monad is a monoid in the category of endofunctors.
+ 
+> Design Pattern in which pipeline implementation are abstracted by wrapping a value in a type
+> 
+> Monads are a design pattern that allows a user to chain operations while the monad manages secrets work behind the scenes.
+##### 目标: 构造流计算(管道计算)
+##### 特点
+1. 一个泛型的构造函数, 比如`Optional<T>`
+2. 不改变泛型类型的运算操作, 内部是非泛型计算: 例如: `Optional<R> map(T -> R)`
+3. 泛型类型不变, 比如可以是Optional<Integer>到Optional<String>, 但是还是Optional<T>类型.
+4. **泛型类型不变是构造流计算的基石**
+ 
+
+- `Writer`: accumulation of data
+- `Option`: possibility of missing values
+- `Future/Promise`: possibility for values to only become available later
+
+- `Wrapper Type`: Like Option, Future, etc.
+- `Wrap Function`: allows entry to monad ecosystem, also known as return, pure, unit.
+- `Run Function`: run transformations on monadic values also known as bind, flatMap, >>=.
+
+
+
 Recursion / Backtracking
 39, 40, 78, 90, 46, 47
 Graph Travel - DFS, BFS, Topological Sorting
