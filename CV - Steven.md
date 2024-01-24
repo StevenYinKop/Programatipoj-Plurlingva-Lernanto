@@ -30,8 +30,8 @@ Agile Tools: 	Jira, Confluence, Bitbucket, Trello
   - **2021.12 - 2023.10**
   - ***DevOps & Scrum Master***
   - _Developed web system used in BMW car ID5, 6, 7, and 8 infotainment systems, MyBMW App, Rolls-Royce App, and dealer websites._
+    - Drove development of scalable cloud services powering global maps and location platform leveraging **Java**, **Spring Boot**, and **AWS ECR, ECS, API Gateway**. Partnered with diverse, distributed teams to enable full DevOps lifecycle from design through deployment across multiple continents.
     - Automated data cleansing processes for global market expansion, building a robust serverless architecture with **AWS Batch, EventBridge, S3, Lambda, Python, and Pandas.**
-    - Utilized **Java**, **Spring Boot**, AWS ECS, 
     - Created CI/CD pipeline to automate the release process, enabling efficient and streamlined deployments, reducing deployment time from 6 hours to 1.5 hours.
     - Produced monthly reports using **CloudWatch** insight on 8 key metrics like 5xx/4xx error, responding time etc.
     - Took on the role of Scrum Master, facilitating the implementation of **Scaled Agile Framework (SAFe)** processes. Collaborated with the European teams from Romania, Germany, and Portugal to ensure alignment of the development progress and fostered effective partnership.
