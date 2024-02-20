@@ -7,7 +7,7 @@ url: https://www.yuque.com/stevenyin/liv/ouux3d
 最大的原因就是除了当前的单元测试类中，其他的地方可能也对这个静态方法进行了mock，
 
 所以在每一次进行mock的时候， 对单个单元测试， 应该mock完再清除掉， 下次需要使用的时候再重新mock
-
+```java
       private MockedStatic<UserContext> mockStatic;
 
       @BeforeEach
@@ -19,3 +19,4 @@ url: https://www.yuque.com/stevenyin/liv/ouux3d
       public void afterEach() {
         mockStatic.close();
       }
+```

@@ -152,3 +152,11 @@ Threads scheduling - Dynamic Priority
 ## When to prefer Multi-Process Architecture?
 - Security and stability are of higher importance
 - Tasks are unrelated to each other
+
+
+
+
+- User/Resource Owner
+- Client
+- Authorization
+- Resource Server
