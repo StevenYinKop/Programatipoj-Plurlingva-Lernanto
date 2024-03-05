@@ -10,3 +10,7 @@
 ## What is ERP?
 > 1. Enterprise Resource Planning
 > 2. a system to manage entire company
+
+
+## What is CRM
+> 1. 客户关系管理系统
