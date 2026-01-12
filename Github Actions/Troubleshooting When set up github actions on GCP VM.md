@@ -226,3 +226,116 @@ Jan 12 12:39:22 services-server runsvc.sh[1235494]: Current runner version: '2.3
 Jan 12 12:39:22 services-server runsvc.sh[1235494]: 2026-01-12 12:39:22Z: Listening for Jobs
 [dev@services-server actions-runner]$
 ```
+
+
+这个报错 `status=203/EXEC` 配合 `Permission denied`，通常意味着 **Systemd 守护进程（root权限）在尝试执行启动脚本时被操作系统拦截了**。
+
+既然你的路径在 `/srv/devs/...` 这种非标准系统目录下，**90% 的可能性是 SELinux 在捣乱**（如果你使用的是 CentOS/RHEL/Fedora/AlmaLinux 等系统）。
+
+请按照以下步骤逐一排查解决：
+
+### 第一步：检查并解决 SELinux 问题（最可能的原因）
+
+Systemd 也就是系统的“管家”，它对安全非常敏感。如果 SELinux 处于开启状态（Enforcing），它会禁止 Systemd 去执行 `/srv` 目录下没有正确安全标签（Label）的脚本。
+
+1. **检查 SELinux 状态**：
+```bash
+getenforce
+
+```
+
+
+* 如果输出 `Enforcing`，则几乎可以确定就是它的锅。
+* 如果输出 `Disabled` 或 `Permissive`，请跳到第二步。
+
+
+2. **临时验证**（如果上面是 Enforcing）：
+你可以临时关闭 SELinux 看服务能否启动，以确认猜测：
+```bash
+sudo setenforce 0
+sudo ./svc.sh start
+
+```
+
+
+如果这次成功启动了，说明确实是 SELinux 问题。记得之后要运行 `sudo ./svc.sh stop` 停止它，并继续下面的“永久修复”。
+3. **永久修复（给文件贴上“可执行”的安全标签）**：
+我们需要告诉 SELinux：“这个目录下的脚本是安全的二进制文件，允许运行”。
+运行以下命令：
+```bash
+# 恢复/设置该目录的安全上下文
+sudo chcon -R -t bin_t /srv/devs/actions-runner/
+
+```
+
+
+*解释：`bin_t` 是通用的可执行文件标签，告诉 SELinux 这里面是可以执行的程序。*
+然后再次尝试启动服务：
+```bash
+sudo setenforce 1  # 记得把防火墙开回去
+sudo ./svc.sh start
+sudo ./svc.sh status
+
+```
+
+
+
+### 第二步：检查文件系统权限
+
+如果不是 SELinux 的问题，可能是 Linux 的基本文件权限导致的。Systemd 虽然以 root 启动，但它会切换用户（通常切换回你安装 Runner 的用户 `dev`）。
+
+1. **检查脚本是否有执行权限**：
+确保 `runsvc.sh` 脚本本身是绿色的（可执行）：
+```bash
+sudo chmod +x /srv/devs/actions-runner/runsvc.sh
+
+```
+
+
+2. **检查路径权限（Traverse Permission）**：
+Systemd 需要能“穿过”所有父目录到达脚本。
+确保 `/srv` 和 `/srv/devs` 目录允许其他人（或 `dev` 组）进入（至少需要 `+x` 权限）：
+```bash
+ls -ld /srv
+ls -ld /srv/devs
+
+```
+
+
+如果权限看起来像 `drwx------`（只有 owner 能进），而 Systemd 切换的用户如果不是 owner，就会进不去。不过既然你是在 `dev` 用户下操作的，这一步通常没问题。
+
+### 第三步：检查 Runner 安装的用户配置
+
+有时候我们在 `root` 下解压了文件，却尝试用 `dev` 用户运行，或者反过来。
+
+检查一下 Systemd 的配置文件里指定了哪个用户：
+
+```bash
+cat /etc/systemd/system/actions.runner.ThatboxAI-backend-docker.thinkbox_self_hosted_runner.service
+
+```
+
+找到 `User=...` 这一行。
+
+* 如果 `User=dev`，那么请确认 `/srv/devs/actions-runner` 目录的所有者确实是 `dev`：
+```bash
+sudo chown -R dev:devs /srv/devs/actions-runner
+
+```
+
+
+
+---
+
+### 总结推荐操作
+
+通常只需要执行**第一步中的第 3 小点（chcon 命令）**即可解决问题。
+
+```bash
+# 一条命令修复 SELinux 上下文
+sudo chcon -R -t bin_t /srv/devs/actions-runner/
+
+# 再次启动
+sudo ./svc.sh start
+
+```
