@@ -76,26 +76,41 @@
 ### Sequence Diagram
 
 ```mermaid
-用户（浏览器）          您的后端应用          Microsoft Teams (OAuth)          Airbyte API          您的数据库
-     |                      |                          |                           |                    |
-     |-- 点击"绑定 Teams" -->|                          |                           |                    |
-     |                      |-- 重定向到 OAuth 授权页 -->|                           |                    |
-     |-- 用户授权同意 ------->|                          |                           |                    |
-     |                      |<-- 回调，携带 auth_code --|                           |                    |
-     |                      |-- 用 code 换取 token ---->|                           |                    |
-     |                      |<-- 返回 access/refresh token                          |                    |
-     |                      |-- POST /integrations/connectors（携带用户 token）----->|                    |
-     |                      |<-- 返回 connector_id ------------------------------ --|                    |
-     |                      |-- 存储 user_id → connector_id ------------------------------------------>|
-     |                      |                          |                           |                    |
-     |-- 请求查看 Teams 数据->|                          |                           |                    |
-     |                      |-- 查询 connector_id ----------------------------------------------------->|
-     |                      |<-- 返回 connector_id -----------------------------------------------------|
-     |                      |-- POST /connectors/{connector_id}/execute ----------->|                    |
-     |                      |                          |<-- 调用 Graph API ---------|                    |
-     |                      |                          |-- 返回数据 -------------->|                    |
-     |                      |<-- 返回数据结果 ---------------------------------------|                    |
-     |<-- 展示数据 ----------|                          |                           |                    |
+sequenceDiagram
+    participant U as 用户（浏览器）
+    participant B as 后端应用
+    participant T as Microsoft Teams (OAuth)
+    participant A as Airbyte API
+    participant DB as 数据库
+
+    rect rgb(200, 220, 255)
+        note over U,T: 阶段一：OAuth 授权绑定
+        U->>B: 点击「绑定 Teams」
+        B-->>U: 重定向到 OAuth 授权页
+        U->>T: 用户授权同意
+        T-->>B: 回调，携带 auth_code
+        B->>T: 用 auth_code 换取 token
+        T-->>B: 返回 access_token / refresh_token
+    end
+
+    rect rgb(200, 240, 220)
+        note over B,DB: 阶段二：创建 Connector 并存储
+        B->>A: POST /integrations/connectors（携带用户 token）
+        A-->>B: 返回 connector_id
+        B->>DB: 存储 user_id → connector_id
+    end
+
+    rect rgb(255, 240, 200)
+        note over U,A: 阶段三：查询 Teams 数据
+        U->>B: 请求查看 Teams 数据
+        B->>DB: 查询 connector_id
+        DB-->>B: 返回 connector_id
+        B->>A: POST /connectors/{connector_id}/execute
+        A->>T: 调用 Microsoft Graph API
+        T-->>A: 返回数据
+        A-->>B: 返回数据结果
+        B-->>U: 展示数据
+    end
 ```
 
 ---
