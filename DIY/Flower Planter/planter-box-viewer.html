@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中空塑木花箱 · 结构示意与下料单</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --panel:#ffffff; --ink:#25231f; --ink2:#6a675e;
+    --line:#ddd8cc; --accent:#8a5a2b; --accent-soft:#f0e6d8;
+    --radius:10px;
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1b1a17; --panel:#242320; --ink:#eae7de; --ink2:#a09c91;
+      --line:#3a3833; --accent:#d19a5e; --accent-soft:#33291d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1b1a17; --panel:#242320; --ink:#eae7de; --ink2:#a09c91;
+    --line:#3a3833; --accent:#d19a5e; --accent-soft:#33291d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+       font-size:15px;line-height:1.6}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px}
+  h1{font-size:19px;font-weight:500;margin:0 0 4px}
+  .sub{color:var(--ink2);font-size:13px;margin:0 0 14px}
+  .grid{display:flex;flex-wrap:wrap;gap:14px}
+  .col-view{flex:1 1 560px;min-width:300px}
+  .col-side{flex:1 1 320px;min-width:280px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  #stage{width:100%;height:440px;border:1px solid var(--line);border-radius:var(--radius);
+         overflow:hidden;background:var(--panel);position:relative;touch-action:none}
+  #stage canvas{display:block;width:100%;height:100%}
+  .hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--ink2);pointer-events:none}
+  h2{font-size:14px;font-weight:500;margin:0 0 10px;letter-spacing:.02em}
+  .row{display:flex;align-items:center;gap:8px;margin:7px 0}
+  .row label{flex:0 0 96px;font-size:13px;color:var(--ink2)}
+  .row input[type=range]{flex:1;accent-color:var(--accent);min-width:60px}
+  .row .val{flex:0 0 58px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+        border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer;user-select:none;
+        background:transparent;color:var(--ink2)}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+  .sw{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--ink2);font-weight:500}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{font-size:12.5px;color:var(--ink2);margin-top:10px}
+  .note b{color:var(--ink);font-weight:500}
+  .btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;
+       padding:5px 12px;font-size:13px;cursor:pointer}
+  .btn:hover{border-color:var(--accent)}
+  .totals{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin-top:10px;color:var(--ink2)}
+  .totals b{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>中空塑木花箱 · 结构示意</h1>
+  <p class="sub">拖动旋转，滚轮缩放。改尺寸右侧下料单会实时更新。单位 mm。</p>
+
+  <div class="grid">
+    <div class="col-view">
+      <div id="stage"><div class="hint">拖动旋转 · 滚轮缩放</div></div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>显示 / 分解</h2>
+        <div class="chips" id="chips"></div>
+        <div class="row" style="margin-top:12px">
+          <label>分解视图</label>
+          <input type="range" id="explode" min="0" max="100" value="0">
+          <span class="val" id="explodeV">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-side">
+      <div class="card">
+        <h2>尺寸参数</h2>
+        <div class="row"><label>板宽</label><input type="range" id="bw" min="100" max="220" step="1" value="140"><span class="val" id="bwV">140</span></div>
+        <div class="row"><label>板厚</label><input type="range" id="bt" min="18" max="35" step="1" value="25"><span class="val" id="btV">25</span></div>
+        <div class="row"><label>箱长 L</label><input type="range" id="L" min="600" max="1600" step="10" value="1000"><span class="val" id="LV">1000</span></div>
+        <div class="row"><label>箱宽 W</label><input type="range" id="W" min="400" max="900" step="10" value="600"><span class="val" id="WV">600</span></div>
+        <div class="row"><label>横板排数</label><input type="range" id="rows" min="2" max="5" step="1" value="3"><span class="val" id="rowsV">3</span></div>
+        <div class="row"><label>垫条高</label><input type="range" id="cl" min="30" max="100" step="1" value="50"><span class="val" id="clV">50</span></div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="reset">恢复默认</button>
+          <button class="btn" id="under">仰视底部</button>
+          <button class="btn" id="topv">俯视</button>
+        </div>
+        <div class="totals" id="totals"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>下料单</h2>
+        <table><thead><tr><th>部件</th><th class="n">尺寸</th><th class="n">数量</th></tr></thead>
+        <tbody id="cuts"></tbody></table>
+        <div class="note" id="cutnote"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>装配要点</h2>
+    <div class="note">
+      <b>1. 受力路径：</b>墙板不是水平跨 1000mm，而是竖着跨 <b>420mm</b>——下端顶在底板上，上端箍在盖板上。所以三排板必须被竖压条缝合成一整块，否则退化成各自水平弯曲，挠度差 16 倍以上。<br>
+      <b>2. 长边竖压条按每 330mm 一根排布，短边不设中间压条</b>——短边跨度只有 550mm，两端的角部压条既遮住长边板端面，又充当短边的缝合件，一件两用。压条一律装外侧，自攻螺丝打在肋位上即可。<br>
+      <b>3. 底板是一根受压横撑，</b>必须和两侧垫条<b>贴紧无缝</b>——留空隙这根撑就失效了。宁可稍紧，用锤子轻敲到位。<br>
+      <b>4. 顶部盖板必须整圈闭合，拐角搭接不要对拼。</b>它是箍住上沿的唯一构件。<br>
+      <b>5. 拐角角码装外侧。</b>土压力把板压向角码，螺丝受剪；装内侧则被拉拔，中空板扛不住。<br>
+      <b>6. 垫条下沿与墙板下沿齐平</b>，直接坐地，底板重量不经过螺丝。<br>
+      <b>7. 底板下的通长垫木两块叠平放</b>（= 垫条高 50mm），直接放地上，把底板净跨从 550 降到 275。<br>
+      <b>8. 内侧衬防草布</b>，挡住拼缝漏土；底板留缝排水，不要封死。<br>
+      <b>拉杆是可选项</b>，勾选后可以看到位置（穿过长边压条，离底约 1/3 高）。只有在你把箱子做到 1500mm 以上、或者省掉盖板时才需要。
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(38,1,10,20000);
+  var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  stage.appendChild(renderer.domElement);
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0x554433,0.95));
+  var d1=new THREE.DirectionalLight(0xffffff,0.65); d1.position.set(1,1.6,0.9); scene.add(d1);
+  var d2=new THREE.DirectionalLight(0xffffff,0.28); d2.position.set(-1,0.5,-1); scene.add(d2);
+  var d3=new THREE.DirectionalLight(0xffffff,0.34); d3.position.set(0.4,-1,0.6); scene.add(d3);
+
+  var root=new THREE.Group(); scene.add(root);
+
+  var GROUPS=[
+    {key:'walls',   name:'横板主体', color:0xc79a68},
+    {key:'cleats',  name:'底部垫条', color:0xa87a4c},
+    {key:'bearer',  name:'底下垫木', color:0x8d6339},
+    {key:'base',    name:'底板',     color:0xb98c5c},
+    {key:'battens', name:'竖压条',   color:0x7d5733},
+    {key:'cap',     name:'顶部盖板', color:0xdcb684},
+    {key:'brackets',name:'角码',     color:0x9aa0a6},
+    {key:'rods',    name:'拉杆（可选）', color:0x8f9499},
+    {key:'soil',    name:'土',       color:0x4e4034}
+  ];
+  var G={}, VIS={};
+  GROUPS.forEach(function(g){ var o=new THREE.Group(); o.userData.dir=new THREE.Vector3(); G[g.key]=o; root.add(o); VIS[g.key]= (g.key!=='soil' && g.key!=='rods'); });
+
+  var P={bw:140,bt:25,L:1000,W:600,rows:3,cl:50};
+  var DEF={bw:140,bt:25,L:1000,W:600,rows:3,cl:50};
+
+  function mat(c){ return new THREE.MeshLambertMaterial({color:c}); }
+  var MAT={}; GROUPS.forEach(function(g){ MAT[g.key]=mat(g.color); });
+  var soilMat=new THREE.MeshLambertMaterial({color:0x4e4034,transparent:true,opacity:0.55});
+  var edgeMat=new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:0.22});
+
+  function box(group,sx,sy,sz,x,y,z,edges){
+    var g=new THREE.BoxGeometry(sx,sy,sz);
+    var m=new THREE.Mesh(g, group==='soil'?soilMat:MAT[group]);
+    m.position.set(x,y,z); G[group].add(m);
+    if(edges!==false && group!=='soil'){
+      var e=new THREE.LineSegments(new THREE.EdgesGeometry(g),edgeMat);
+      e.position.set(x,y,z); G[group].add(e);
+    }
+    return m;
+  }
+  function clearAll(){
+    GROUPS.forEach(function(g){
+      var o=G[g.key];
+      while(o.children.length){ var c=o.children.pop(); if(c.geometry)c.geometry.dispose(); }
+    });
+  }
+
+  var CUTS=[], H=0;
+
+  function build(){
+    clearAll(); CUTS=[];
+    var bw=P.bw, T=P.bt, L=P.L, W=P.W, rows=P.rows, cl=P.cl;
+    H = rows*bw;
+
+    // ---- 横板主体 ----
+    var shortLen = W - 2*T;
+    for(var i=0;i<rows;i++){
+      var y=i*bw+bw/2;
+      box('walls', L, bw, T, 0, y,  (W/2-T/2));
+      box('walls', L, bw, T, 0, y, -(W/2-T/2));
+      box('walls', T, bw, shortLen,  (L/2-T/2), y, 0);
+      box('walls', T, bw, shortLen, -(L/2-T/2), y, 0);
+    }
+    CUTS.push(['长边横板', L+' × '+bw, rows*2]);
+    CUTS.push(['短边横板', shortLen+' × '+bw, rows*2]);
+
+    // ---- 底部垫条（内侧，1/2 宽，下沿齐平坐地）----
+    var clLong = L - 2*T, clShort = W - 4*T;
+    box('cleats', clLong, cl, T, 0, cl/2,  (W/2-T-T/2));
+    box('cleats', clLong, cl, T, 0, cl/2, -(W/2-T-T/2));
+    box('cleats', T, cl, clShort,  (L/2-T-T/2), cl/2, 0);
+    box('cleats', T, cl, clShort, -(L/2-T-T/2), cl/2, 0);
+    CUTS.push(['长边垫条', clLong+' × '+cl, 2]);
+    CUTS.push(['短边垫条', clShort+' × '+cl, 2]);
+
+    // ---- 底板下的通长垫木（叠层，坐地）----
+    var layers=Math.max(1,Math.round(cl/T));
+    for(var k=0;k<layers;k++){
+      box('bearer', clLong, T, bw, 0, T/2+k*T, 0);
+    }
+    CUTS.push(['底下垫木（叠 '+layers+' 层）', clLong+' × '+bw, layers]);
+
+    // ---- 底板（沿短边方向铺，两端搁在长边垫条上）----
+    var innerX = L - 2*T, innerZ = W - 2*T;
+    var n = Math.max(1, Math.floor(innerX/bw));
+    var gap = (innerX - n*bw)/(n-1>0?(n-1):1);
+    var baseY = cl + T/2;
+    for(var j=0;j<n;j++){
+      var x = -innerX/2 + bw/2 + j*(bw+ (n>1?gap:0));
+      box('base', bw, T, innerZ, x, baseY, 0);
+    }
+    CUTS.push(['底板', innerZ+' × '+bw, n]);
+
+    // ---- 竖压条（长边每约330mm一根；短边跨度小，不设中间压条）----
+    var kL=Math.max(2,Math.ceil(L/400)), kW=Math.max(1,Math.ceil(W/700)), nb=0;
+    for(var s=-1;s<=1;s+=2){
+      for(var a=1;a<kL;a++){ box('battens', bw, H, T, -L/2+a*L/kL, H/2, s*(W/2+T/2)); nb++; }
+      for(var b2=1;b2<kW;b2++){ box('battens', T, H, bw, s*(L/2+T/2), H/2, -W/2+b2*W/kW); nb++; }
+    }
+    // 角部压条：盖住长边板外露端面（贴在两个短边面的边缘）
+    var nt=0;
+    for(var sx=-1;sx<=1;sx+=2) for(var sz=-1;sz<=1;sz+=2){
+      box('battens', T, H, bw, sx*(L/2+T/2), H/2, sz*(W/2-bw/2)); nt++;
+    }
+    CUTS.push(['竖压条', H+' × '+bw, nb]);
+    CUTS.push(['角部压条', H+' × '+bw, nt]);
+
+    // ---- 可选拉杆（穿过长边压条）----
+    for(var a2=1;a2<kL;a2++){
+      box('rods', 9, 9, W+90, -L/2+a2*L/kL, H*0.33, 0, false);
+    }
+
+    // ---- 顶部盖板（整板不剖，向外挑出 ov）----
+    var capW = bw, ov = 30;
+    var capOutX = L/2 + T + ov, capOutZ = W/2 + T + ov;
+    var capY = H + T/2;
+    box('cap', 2*capOutX, T, capW, 0, capY,  (capOutZ-capW/2));
+    box('cap', 2*capOutX, T, capW, 0, capY, -(capOutZ-capW/2));
+    var capShort = Math.max(20, 2*capOutZ - 2*capW);
+    box('cap', capW, T, capShort,  (capOutX-capW/2), capY, 0);
+    box('cap', capW, T, capShort, -(capOutX-capW/2), capY, 0);
+    CUTS.push(['长边盖板（不剖）', (2*capOutX)+' × '+capW, 2]);
+    CUTS.push(['短边盖板（不剖）', capShort+' × '+capW, 2]);
+
+    // ---- 角码（外侧，每角每排一个）----
+    var bl=Math.min(70, bw*0.5), bt=3, bh=Math.min(50, bw*0.42);
+    for(var sx=-1;sx<=1;sx+=2) for(var sz=-1;sz<=1;sz+=2){
+      for(var r=0;r<rows;r++){
+        var yc=r*bw+bw/2;
+        box('brackets', bl, bh, bt, sx*(L/2-bl/2), yc, sz*(W/2+bt/2), false);
+        box('brackets', bt, bh, bl, sx*(L/2+bt/2), yc, sz*(W/2-bl/2), false);
+      }
+    }
+
+    // ---- 土 ----
+    var soilTop = H - 40;
+    var soilH = Math.max(10, soilTop - (cl+T));
+    box('soil', innerX-4, soilH, innerZ-4, 0, cl+T+soilH/2, 0);
+
+    // 分解方向
+    G.walls.userData.dir.set(0,0,0);
+    G.cleats.userData.dir.set(0,-1.1,0);
+    G.bearer.userData.dir.set(0,-2.2,0);
+    G.base.userData.dir.set(0,1.4,0);
+    G.battens.userData.dir.set(0,0,0);
+    G.cap.userData.dir.set(0,2.6,0);
+    G.brackets.userData.dir.set(0,0,0);
+    G.rods.userData.dir.set(0,0,0);
+    G.soil.userData.dir.set(0,3.4,0);
+
+    applyVis(); applyExplode();
+    renderCuts();
+    frameCam();
+  }
+
+  // 分解：压条与角码向外散开需要按件处理
+  function applyExplode(){
+    var t=+document.getElementById('explode').value/100;
+    var k=Math.max(P.L,P.W)*0.35*t;
+    GROUPS.forEach(function(g){
+      var o=G[g.key], d=o.userData.dir;
+      o.position.set(d.x*k, d.y*k*0.55, d.z*k);
+    });
+    // 压条 / 角码 沿各自法向外移
+    [['battens',1.0],['brackets',1.35]].forEach(function(p){
+      G[p[0]].children.forEach(function(m){
+        if(!m.userData.home) m.userData.home=m.position.clone();
+        var h=m.userData.home, nx=Math.sign(h.x), nz=Math.sign(h.z);
+        var w=Math.abs(h.x)>Math.abs(h.z)?1:0;
+        m.position.set(h.x + (w?nx:0)*k*p[1], h.y, h.z + (w?0:nz)*k*p[1]);
+      });
+    });
+    document.getElementById('explodeV').textContent=Math.round(t*100)+'%';
+  }
+  function applyVis(){ GROUPS.forEach(function(g){ G[g.key].visible=VIS[g.key]; }); }
+
+  function renderCuts(){
+    var tb=document.getElementById('cuts'); tb.innerHTML='';
+    var total=0;
+    CUTS.forEach(function(c){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+c[0]+'</td><td class="n">'+c[1]+'</td><td class="n">'+c[2]+'</td>';
+      tb.appendChild(tr);
+      var len=parseFloat(String(c[1]).split('×')[0]);
+      if(!isNaN(len)) total += len*c[2];
+    });
+    var soilV=((P.L-2*P.bt)*(P.W-2*P.bt)*(H-40-P.cl-P.bt))/1e9;
+    document.getElementById('totals').innerHTML=
+      '总高 <b>'+(H+P.bt)+'mm</b>　土深 <b>'+Math.round(H-40-P.cl-P.bt)+'mm</b>　'+
+      '土量 <b>'+soilV.toFixed(2)+'m³</b>（约 '+Math.round(soilV*1600)+'kg）';
+    document.getElementById('cutnote').innerHTML=
+      '板材总长约 <b>'+(total/1000).toFixed(1)+' m</b>。'+
+      '<b>盖板用整板不剖</b>，两条长边保持原厂封闭边，向外挑出 30mm。'+
+      '垫条由整板纵剖出 '+P.cl+'mm，切口朝上藏在底板下面。'+
+      '五金：不锈钢角码 <b>'+(P.rows*4)+'</b> 个，其余连接用不锈钢自攻螺丝打在肋位上。';
+  }
+
+  // ---------- 相机 ----------
+  var az=-0.75, pol=1.12, dist=2200, target=new THREE.Vector3(0,0,0);
+  function frameCam(){
+    target.set(0,H*0.42,0);
+    dist=Math.max(P.L,P.W)*2.1;
+    updateCam();
+  }
+  function updateCam(){
+    var x=dist*Math.sin(pol)*Math.cos(az), y=dist*Math.cos(pol), z=dist*Math.sin(pol)*Math.sin(az);
+    camera.position.set(target.x+x, target.y+y, target.z+z);
+    camera.lookAt(target);
+  }
+  var drag=false,px=0,py=0;
+  function down(e){drag=true;var p=pt(e);px=p.x;py=p.y;}
+  function move(e){ if(!drag)return; var p=pt(e);
+    az -= (p.x-px)*0.008; pol=Math.max(0.05,Math.min(3.09,pol-(p.y-py)*0.006));
+    px=p.x;py=p.y;updateCam(); if(e.cancelable)e.preventDefault(); }
+  function up(){drag=false;}
+  function pt(e){ return e.touches&&e.touches[0]?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY}; }
+  stage.addEventListener('mousedown',down); window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  stage.addEventListener('touchstart',down,{passive:true}); stage.addEventListener('touchmove',move,{passive:false}); window.addEventListener('touchend',up);
+  stage.addEventListener('wheel',function(e){ dist=Math.max(400,Math.min(9000,dist*(1+(e.deltaY>0?0.12:-0.12)))); updateCam(); e.preventDefault(); },{passive:false});
+
+  function resize(){
+    var w=stage.clientWidth, h=stage.clientHeight;
+    if(w<1||h<1) return;
+    renderer.setSize(w,h);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize);
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(stage); }
+
+  // ---------- UI ----------
+  var chips=document.getElementById('chips');
+  GROUPS.forEach(function(g){
+    var b=document.createElement('button');
+    b.className='chip'+(VIS[g.key]?' on':'');
+    b.innerHTML='<span class="sw" style="background:#'+g.color.toString(16).padStart(6,'0')+'"></span>'+g.name;
+    b.onclick=function(){ VIS[g.key]=!VIS[g.key]; b.classList.toggle('on',VIS[g.key]); applyVis(); };
+    chips.appendChild(b);
+  });
+
+  ['bw','bt','L','W','rows','cl'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.addEventListener('input',function(){
+      P[id]=+el.value; document.getElementById(id+'V').textContent=el.value;
+      if(id==='bw'){ var c=document.getElementById('cl'); c.max=Math.floor(P.bw*0.6); if(P.cl>+c.max){P.cl=+c.max;c.value=c.max;document.getElementById('clV').textContent=c.max;} }
+      build();
+    });
+  });
+  document.getElementById('explode').addEventListener('input',applyExplode);
+  document.getElementById('under').onclick=function(){ pol=2.55; az=-0.75; updateCam(); };
+  document.getElementById('topv').onclick=function(){ pol=0.12; az=-0.75; updateCam(); };
+  document.getElementById('reset').onclick=function(){
+    Object.keys(DEF).forEach(function(k){ P[k]=DEF[k];
+      var el=document.getElementById(k); if(el){el.value=DEF[k];document.getElementById(k+'V').textContent=DEF[k];}});
+    document.getElementById('explode').value=0;
+    az=-0.75; pol=1.12;
+    build();
+  };
+
+  resize(); build();
+  (function loop(){ requestAnimationFrame(loop); renderer.render(scene,camera); })();
+})();
+</script>
+</body>
+</html>
