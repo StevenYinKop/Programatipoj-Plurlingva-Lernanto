@@ -1,0 +1,815 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>多肉梯架定稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root{
+    --ground:#e6e8e2;
+    --panel:rgba(250,250,247,.93);
+    --line:#cfd3c9;
+    --ink:#1f2521;
+    --ink2:#56605a;
+    --ink3:#848d86;
+    --wpc:#6b4a3a;
+    --sage:#5f7a50;
+    --on-wpc:#f6efe9;
+    --warn:#a4582b;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--ground);color:var(--ink);overflow:hidden;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:13px}
+  #stage{position:fixed;inset:0}
+  #stage canvas{display:block;touch-action:none}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .card{position:fixed;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:8px;box-sizing:border-box}
+
+  #ctrl{top:calc(16px + env(safe-area-inset-top,0px));left:16px;width:252px;padding:16px;display:flex;flex-direction:column;gap:12px;
+    max-height:calc(100% - 32px);overflow:auto}
+  #ctrl h1{margin:0;font-family:"Noto Serif SC",serif;font-weight:600;font-size:19px;letter-spacing:.02em}
+  #ctrl .lede{margin:4px 0 0;color:var(--ink2);line-height:1.55;font-size:12px}
+  .flabel{font-size:11px;letter-spacing:.1em;color:var(--ink3)}
+  .checks{display:flex;flex-direction:column;gap:7px}
+  .check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);cursor:pointer}
+  .check input{accent-color:var(--sage);margin:0}
+  .sw{width:9px;height:9px;border-radius:2px;margin-left:auto;flex:0 0 auto}
+  .row{display:flex;gap:6px;flex-wrap:wrap}
+  button{font:inherit;font-size:12px;color:var(--ink);background:transparent;border:1px solid var(--line);
+    border-radius:6px;padding:6px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink3)}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+  input[type=range]{width:100%;accent-color:var(--wpc);margin:0}
+
+  #spec{right:16px;top:calc(16px + env(safe-area-inset-top,0px));width:322px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+    max-height:calc(100% - 64px);overflow:auto}
+  #spec h2{margin:0;font-size:11px;letter-spacing:.12em;color:var(--ink3);font-weight:500}
+  .kvs{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:12px;color:var(--ink2)}
+  .kvs b{color:var(--ink);font-weight:500;text-align:right}
+  .tier{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:12px}
+  .tier:first-of-type{border-top:0}
+  .tier .h{font-weight:500;color:var(--ink)}
+  .tier .d{color:var(--ink3);font-size:11px}
+  .tier .load{color:var(--sage);text-align:right}
+  .tier .what{grid-column:1/-1;color:var(--ink2);line-height:1.55}
+  .ok{color:var(--sage)}
+
+  .hw{display:flex;flex-direction:column;gap:2px}
+  .hwrow{display:grid;grid-template-columns:12px 1fr auto;gap:2px 9px;align-items:start;padding:6px 8px;margin:0 -8px;border-radius:6px;
+    cursor:pointer;font-size:12px;color:var(--ink2);border:0;background:transparent;text-align:left;font:inherit}
+  .hwrow:hover{background:rgba(31,37,33,.05)}
+  .hwrow[aria-pressed="true"]{background:rgba(31,37,33,.09)}
+  .hwrow .dot{width:10px;height:10px;border-radius:50%;margin-top:4px}
+  .hwrow b{color:var(--ink);font-weight:500;font-size:12px}
+  .hwrow .c{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--ink);text-align:right;white-space:nowrap}
+  .hwrow .c i{font-style:normal;color:var(--ink3)}
+  .hwrow .w{grid-column:2/-1;font-size:11px;color:var(--ink3);line-height:1.5}
+  .hwnote{font-size:11px;color:var(--ink3);line-height:1.5;margin-top:4px}
+  #tip{position:fixed;z-index:20;pointer-events:none;max-width:260px;padding:9px 11px;border-radius:7px;
+    background:rgba(31,37,33,.94);color:#f1f2ee;font-size:12px;line-height:1.55;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  #tip b{display:block;font-weight:500;margin-bottom:2px}
+  #tip .opt{color:#f2c79b}
+  #hint{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+    font-size:11px;color:var(--ink3);pointer-events:none;white-space:nowrap}
+  #fail{position:fixed;inset:0;display:grid;place-items:center;padding-inline:24px;text-align:center;background:var(--ground);color:var(--ink);line-height:1.7}
+  #fail[hidden]{display:none}
+
+  /* 半屏、平板、手机：3D 在上面，两张卡片排到下面，整页上下滚动，不再盖住模型 */
+  @media (max-width:1100px){
+    html,body{height:auto}
+    body{overflow:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:12px;padding:0 12px 12px}
+    #stage{position:relative;inset:auto;grid-column:1/-1;margin:0 -12px;height:62vh;min-height:340px}
+    .card{position:static;width:auto;max-height:none;backdrop-filter:none;-webkit-backdrop-filter:none;background:#fafaf7}
+    #ctrl,#spec{top:auto;left:auto;right:auto;width:auto;max-height:none;overflow:visible}
+    #hint{display:none}
+  }
+  @media (max-width:700px){
+    body{grid-template-columns:minmax(0,1fr)}
+    #ctrl .lede{display:none}
+  }
+</style>
+
+<div id="stage"></div>
+<div id="fail" hidden><div><b>3D 视图没能启动。</b><br>这个页面需要浏览器支持 WebGL，请换用电脑上的 Chrome 或 Safari 打开。</div></div>
+
+<div class="card" id="ctrl">
+  <div>
+    <h1>多肉梯架定稿</h1>
+    <p class="lede">1000 宽、600 深、立柱 1340 高，三层。第 1 层净高 650，第 2 层 450（都是板面到上一层板底），最上层不封顶。第 1 层铺到斜腿前沿，托条螺栓全藏在层板底下。全部用 140×22 塑木，立柱和斜腿都是单层板。植物按你拍的照片摆上去，尺寸是估的。</p>
+  </div>
+
+  <div>
+    <div class="flabel" style="margin-bottom:7px">显示</div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="L_plants" checked>植物<span class="sw" style="background:#7aa36a"></span></label>
+      <label class="check"><input type="checkbox" id="L_labels" checked>植物名字<span class="sw" style="background:#1f2521"></span></label>
+      <label class="check"><input type="checkbox" id="L_shelf" checked>层板<span class="sw" style="background:#6b4a3a"></span></label>
+      <label class="check"><input type="checkbox" id="L_apron" checked>裙板和托条<span class="sw" style="background:#8a6250"></span></label>
+      <label class="check"><input type="checkbox" id="L_frame" checked>侧架（立柱、斜腿）<span class="sw" style="background:#4e3529"></span></label>
+      <label class="check"><input type="checkbox" id="L_steel" checked>人字撑、垫块<span class="sw" style="background:#9a735f"></span></label>
+      <label class="check"><input type="checkbox" id="L_wall" checked>砖墙<span class="sw" style="background:#c9b98a"></span></label>
+    </div>
+  </div>
+
+  <div>
+    <div class="flabel" style="margin-bottom:7px">五金</div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="L_hw" checked>显示五金</label>
+      <label class="check"><input type="checkbox" id="L_xray">只看五金（木头变半透明）</label>
+      <label class="check"><input type="checkbox" id="L_opt" checked>显示可以省掉的（半透明）</label>
+    </div>
+  </div>
+
+  <div>
+    <div class="flabel" style="margin-bottom:7px">拆开看（拆开时不显示五金）</div>
+    <input type="range" id="ex" min="0" max="100" value="0" aria-label="拆开程度">
+  </div>
+
+  <div class="row" role="group" aria-label="视角">
+    <button data-v="iso">斜看</button>
+    <button data-v="front">正面</button>
+    <button data-v="side">侧面</button>
+    <button data-v="back">背面</button>
+  </div>
+</div>
+
+<div class="card" id="spec">
+  <h2>五金 · 点一行只看这一种</h2>
+  <div class="hw" id="hwList"></div>
+  <p class="hwnote">鼠标移到五金上，会显示它是什么、在哪、连接哪几块。侧架单层，全架只有 M6×60 和 M6×40 两种螺栓。灰色数字是可以省掉的。</p>
+
+  <h2 style="margin-top:4px">整体</h2>
+  <div class="kvs">
+    <span>宽 × 深 × 高</span><b class="mono">1000 × 600 × 1340</b>
+    <span>斜腿倾角</span><b class="mono">11.5°</b>
+    <span>满载总重（估）</span><b class="mono">≈ 100 kg</b>
+    <span>顶部往外拉多少会翻</span><b class="mono ok">≈ 24 kg</b>
+    <span>侧架</span><b class="mono">单层 22 · 托条和人字撑成框</b>
+  </div>
+
+  <h2 style="margin-top:4px">每一层</h2>
+  <div>
+    <div class="tier"><span class="h mono">3</span><span class="d mono">台面 1266 · 深 140</span><span class="load mono">7 / ≤30 kg</span>
+      <span class="what">最上层，晒得最多：玉树小苗 ×3、圆叶多肉、休眠和扦插的小盆 ×3。后沿有一条立放的顶挡条挡住盆。</span></div>
+    <div class="tier"><span class="h mono">2</span><span class="d mono">台面 794 · 深 290 · 净高 450</span><span class="load mono">15 / ≤30 kg</span>
+      <span class="what">前排（上面没遮挡）：大莲座、斑点芦荟、粉色方盆、红边石莲、椭圆瓷盆。后排（第 3 层底下，偏阴）：珍珠吊兰 ×2。</span></div>
+    <div class="tier"><span class="h mono">1</span><span class="d mono">台面 122 · 深 519 · 净高 650</span><span class="load mono">43 / ≤80 kg</span>
+      <span class="what">前排：大玉树（放最前沿，伸出第 2 层外面，上面不挡）、树状莲花掌、红盆盆景。后排（第 2 层底下，偏阴）：紫露草 Nanouk ×5。中间加两个垫块直接顶在地上。</span></div>
+  </div>
+  <div class="kvs" style="font-size:11px;color:var(--ink3)"><span>层重：现在放的 / 建议上限。前后沿底下有 69 高的裙板，正下方净高要少 69。</span><span></span></div>
+</div>
+
+<div id="tip" hidden></div>
+<div id="hint">拖动旋转 · 滚轮缩放 · 右键或 Shift 拖动平移</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+if (typeof THREE === 'undefined') { document.getElementById('fail').hidden = false; return; }
+const T = THREE;
+
+/* ================= 尺寸 (mm) ================= */
+const BT = 22, BW = 140, GAP = 10;
+const W = 1000, H = 1340, WALL = 45;
+const LX = BT;                          // 单层侧架厚 22
+const FOOT = 600;                       // 斜腿脚外沿离墙
+const S = 0.2031;                       // 斜腿每升高 1mm 往墙收
+const TH = BW / Math.cos(Math.atan(S)); // 斜腿水平方向厚度 ≈143
+const legBack = y => FOOT - TH - S*y;   // 斜腿背面离墙
+const legFront = y => FOOT - S*y;       // 斜腿正面离墙
+const APRON = 70;                       // 劈开条子
+const TIERS = [                         // 台面标高、板数
+  { top:122,  k:3, strip:true },        // 第 1 层：3 块整板 + 1 根 69 前沿条
+  { top:794,  k:2 },
+  { top:1266, k:1 }
+];
+const depthOf = k => k*BW + (k-1)*GAP;
+const tierD = t => depthOf(t.k) + (t.strip ? GAP + 69 : 0);
+
+/* ================= 场景 ================= */
+const stage = document.getElementById('stage');
+let renderer;
+try { renderer = new T.WebGLRenderer({ antialias:true }); }
+catch(e){ document.getElementById('fail').hidden = false; return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = T.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene = new T.Scene();
+scene.background = new T.Color(0xe6e8e2);
+const cam = new T.PerspectiveCamera(34, 1, 10, 20000);
+scene.add(new T.HemisphereLight(0xf4f6f0, 0x8a8f86, 0.78));
+const sun = new T.DirectionalLight(0xfff3e0, 0.85);
+sun.position.set(1200, 2600, 1800);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-1600, right:1600, top:2200, bottom:-1200, near:100, far:6500 });
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+const ground = new T.Mesh(new T.PlaneGeometry(8000, 8000), new T.MeshLambertMaterial({ color:0x6e5446 }));
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+
+/* 米黄色砖墙（照片 3 那面） */
+function brickTex(){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#9c8d62'; g.fillRect(0,0,512,512);
+  const bw = 115, bh = 36, mortar = 5;
+  for (let row=0; row*(bh+mortar) < 512; row++){
+    const off = row%2 ? -bw/2 : 0;
+    for (let x=off; x<512; x+=bw+mortar){
+      const s = 0.95 + Math.random()*0.08;
+      g.fillStyle = `rgb(${Math.round(222*s)},${Math.round(205*s)},${Math.round(150*s)})`;
+      g.fillRect(x, row*(bh+mortar), bw, bh);
+    }
+  }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3, 2.4); return t;
+}
+const wallMat = new T.MeshLambertMaterial({ map:brickTex(), transparent:true });
+const wall = new T.Mesh(new T.PlaneGeometry(3200, 2600), wallMat);
+wall.position.set(0, 1300, 0); wall.receiveShadow = true; scene.add(wall);
+
+/* ================= 材质 ================= */
+function grainTex(base){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0,0,512,128);
+  for (let i=0;i<70;i++){
+    const y = Math.random()*128, a = 0.05 + Math.random()*0.12;
+    g.strokeStyle = Math.random()<.5 ? `rgba(40,24,16,${a})` : `rgba(160,120,95,${a})`;
+    g.lineWidth = 0.6 + Math.random()*1.6;
+    g.beginPath(); g.moveTo(0,y);
+    for (let x=0;x<=512;x+=32) g.lineTo(x, y + Math.sin(x*0.02 + i)*2.2);
+    g.stroke();
+  }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; return t;
+}
+function holesTex(vertical){
+  const c = document.createElement('canvas');
+  c.width = vertical ? 64 : 360; c.height = vertical ? 360 : 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#7a5644'; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle = '#2b1c15';
+  for (let k=0;k<7;k++){
+    const along = 26 + k*51.5;
+    g.beginPath();
+    if (vertical) g.arc(32, along, 15, 0, Math.PI*2); else g.arc(along, 32, 15, 0, Math.PI*2);
+    g.fill();
+  }
+  return new T.CanvasTexture(c);
+}
+const matGrain = new T.MeshLambertMaterial({ map:grainTex('#6b4a3a') });
+const matGrainD = new T.MeshLambertMaterial({ map:grainTex('#5a3d30') });
+const matStrip = new T.MeshLambertMaterial({ map:grainTex('#7c5847') });
+const matHolesU = new T.MeshLambertMaterial({ map:holesTex(false) });
+const matHolesV = new T.MeshLambertMaterial({ map:holesTex(true) });
+const matZinc = new T.MeshLambertMaterial({ color:0xb9bec2 });
+const matRubber = new T.MeshLambertMaterial({ color:0x1b1d1c });
+
+function matsFor(w,h,d,face){
+  const longAxis = [w,h,d].indexOf(Math.max(w,h,d));
+  const uv = [[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+  const out = [];
+  for (let f=0; f<6; f++){
+    if (Math.floor(f/2) === longAxis){ const [u,v] = uv[f]; out.push(u >= v ? matHolesU : matHolesV); }
+    else out.push(face);
+  }
+  return out;
+}
+const groups = {};
+['frame','apron','shelf','steel','plants','labels'].forEach(k=>{ groups[k] = new T.Group(); });
+const root = new T.Group(); scene.add(root);
+Object.values(groups).forEach(g=>root.add(g));
+const movers = [];
+
+function box(w,h,d,x,y,z,mat,grp,ex){
+  const m = new T.Mesh(new T.BoxGeometry(w,h,d), mat);
+  m.position.set(x+w/2, y+h/2, z+d/2);
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.base = m.position.clone(); m.userData.ex = ex || new T.Vector3();
+  movers.push(m); grp.add(m); return m;
+}
+const wpc = (w,h,d,x,y,z,grp,ex,face)=> box(w,h,d,x,y,z,matsFor(w,h,d,face||matGrain),grp,ex);
+function slab(x, wx, z0, y0, z1, y1, dz, grp, ex){
+  const len = Math.hypot(z1-z0, y1-y0);
+  const m = new T.Mesh(new T.BoxGeometry(wx, len, dz), matsFor(wx, len, dz, matGrainD));
+  m.position.set(x + wx/2, (y0+y1)/2, (z0+z1)/2);
+  m.rotation.x = Math.atan2(z1 - z0, y1 - y0);
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.base = m.position.clone(); m.userData.ex = ex || new T.Vector3();
+  movers.push(m); grp.add(m); return m;
+}
+const V = (x,y,z,s)=> new T.Vector3(x,y,z).multiplyScalar(s);
+
+/* ================= 侧架：单层立柱 + 斜腿 ================= */
+[[0,-1],[W-LX,1]].forEach(([x, side])=>{
+  const ex = V(side,0,0,380);
+  for (let b=0;b<1;b++){
+    const xb = x + b*BT;
+    const e = ex.clone().add(V(side,0,0, b===0 ? (side<0?60:0) : (side>0?60:0)));
+    wpc(BT, H, BW, xb, 0, WALL, groups.frame, e, matGrainD);                 // 贴墙立柱
+    slab(xb, BT, legBack(0)+TH/2, 0, legBack(H)+TH/2, H, BW, groups.frame, e); // 斜腿
+  }
+});
+
+/* ================= 每层：托条、裙板、层板 ================= */
+TIERS.forEach((t, i)=>{
+  const y = t.top - BT, d = tierD(t);
+  const lift = V(0,1,0, 110 + i*60);
+  const cleatLen = legFront(y) - WALL;
+  /* 托条：劈开的 70 条子立放，螺栓穿过立柱和斜腿 */
+  wpc(BT, APRON, cleatLen, LX, y - APRON, WALL, groups.apron, V(-1,0,0,200).add(lift), matStrip);
+  wpc(BT, APRON, cleatLen, W - LX - BT, y - APRON, WALL, groups.apron, V(1,0,0,200).add(lift), matStrip);
+  /* 裙板：前后沿下面各一条，在两根托条之间 */
+  const aw = W - 2*LX - 2*BT;
+  wpc(aw, APRON, BT, LX + BT, y - APRON, WALL, groups.apron, V(0,0,-1,120).add(lift), matStrip);
+  wpc(aw, APRON, BT, LX + BT, y - APRON, WALL + d - BT, groups.apron, V(0,0,1,160).add(lift), matStrip);
+  /* 层板 */
+  for (let j=0;j<t.k;j++)
+    wpc(W - 2*LX, BT, BW, LX, y, WALL + j*(BW+GAP), groups.shelf, V(0,1,0,320 + i*90));
+  if (t.strip) wpc(W - 2*LX, BT, 69, LX, y, WALL + t.k*(BW+GAP), groups.shelf, V(0,1,0,320 + i*90), matStrip);
+});
+/* 顶挡条 D：69 条子立放在最上层后沿，挡住盆，同时拉住两根立柱 */
+const DY = TIERS[2].top;
+wpc(W - 2*LX, APRON, BT, LX, DY, WALL, groups.shelf, V(0,1,0,600), matStrip);
+/* 第 1 层中间两个垫块直接落地 */
+[W/3, 2*W/3].forEach(cx=> wpc(BT, TIERS[0].top - BT, tierD(TIERS[0]) - 2*BT, cx - BT/2, 0, WALL + BT, groups.steel, V(0,-1,0,80), matGrainD));
+
+/* ================= 背面人字撑（塑木条）、立柱背后垫块 ================= */
+function brace(x0,y0,x1,y1){
+  const len = Math.hypot(x1-x0, y1-y0), wdt = 65;
+  const m = new T.Mesh(new T.BoxGeometry(len, wdt, BT), matsFor(len, wdt, BT, matStrip));
+  m.position.set((x0+x1)/2, (y0+y1)/2, WALL - BT/2);
+  m.rotation.z = Math.atan2(y1-y0, x1-x0);
+  m.castShadow = true;
+  m.userData.base = m.position.clone(); m.userData.ex = V(0,0,-1,200);
+  movers.push(m); groups.steel.add(m);
+}
+brace(LX + 40, 45, W/2 - 20, H - 30);
+brace(W - LX - 40, 45, W/2 + 20, H - 30);
+/* 立柱背后：两块边角料叠成 44 厚的垫块 + 防滑垫 */
+[[0,280],[0,1080],[W-LX,280],[W-LX,1080]].forEach(([x,y])=>{
+  box(LX, 100, 2*BT, x, y, WALL - 2*BT, matGrainD, groups.steel, V(0,0,-1,240));
+});
+
+
+/* ================= 五金 ================= */
+const HW = new T.Group(), HWopt = new T.Group();
+root.add(HW); root.add(HWopt);
+const Y3 = new T.Vector3(0,1,0);
+const CAT = {
+  b100: { label:'M6×100 螺栓', sub:'两面大垫圈（mudguard）', color:0xd9480f },
+  b60:  { label:'M6×60 螺栓',  sub:'塑木面垫大垫圈', color:0xd9480f },
+  b40:  { label:'M6×40 螺栓',  sub:'塑木面垫大垫圈', color:0x1c6fd6 },
+  br:   { label:'50mm 角码',   sub:'镀锌', color:0x7d878e },
+  sc:   { label:'10G×50 自攻螺丝', sub:'不锈钢，预钻 4mm', color:0xe0a800 },
+  plate:{ label:'150mm 连接平板', sub:'镀锌', color:0x7d878e },
+  pad:  { label:'防滑垫', sub:'Slipstick 50mm', color:0x2a2a2a }
+};
+Object.values(CAT).forEach(c=>{
+  c.mat = new T.MeshLambertMaterial({ color:c.color });
+  c.ghost = new T.MeshLambertMaterial({ color:c.color, transparent:true, opacity:.38, depthWrite:false });
+  c.req = 0; c.opt = 0; c.where = new Set();
+});
+const hwMeshes = [];
+function part(geo, cat, rec, opt){
+  const m = new T.Mesh(geo, opt ? CAT[cat].ghost : CAT[cat].mat);
+  m.userData.rec = rec; m.userData.cat = cat; m.userData.opt = !!opt;
+  hwMeshes.push(m); return m;
+}
+function along(m, start, dir, offset){       // 圆柱沿 dir 摆，中心在 start + dir*offset
+  m.quaternion.setFromUnitVectors(Y3, dir.clone().normalize());
+  m.position.copy(start).addScaledVector(dir, offset);
+  return m;
+}
+function count(cat, rec, opt, n){ const c = CAT[cat]; if (opt) c.opt += n||1; else c.req += n||1; if (!opt) c.where.add(rec.short); }
+
+/* 螺栓：start = 螺栓头那一面的板面，dir = 往里穿，thick = 穿过的总厚度 */
+function bolt(cat, start, dir, thick, rec, opt){
+  const g = new T.Group(), mud = cat === 'b100' || !!rec.mud;
+  const L = { b100:100, b60:60, b40:40 }[cat];
+  const wr = mud ? 12.5 : 6.5, wt = mud ? 1.6 : 1.2;
+  g.add(along(part(new T.CylinderGeometry(5.8,5.8,4,6), cat, rec, opt), start, dir, -wt-2));          // 头
+  g.add(along(part(new T.CylinderGeometry(wr,wr,wt,20), cat, rec, opt), start, dir, -wt/2));          // 头侧垫圈
+  g.add(along(part(new T.CylinderGeometry(3,3,L,10), cat, rec, opt), start, dir, -wt + L/2));         // 螺杆
+  g.add(along(part(new T.CylinderGeometry(wr,wr,wt,20), cat, rec, opt), start, dir, thick + wt/2));   // 螺母侧垫圈
+  g.add(along(part(new T.CylinderGeometry(5.8,5.8,5,6), cat, rec, opt), start, dir, thick + wt + 2.5)); // 螺母
+  (opt ? HWopt : HW).add(g); count(cat, rec, opt);
+}
+function screw(start, dir, rec, opt){
+  const g = new T.Group();
+  g.add(along(part(new T.CylinderGeometry(5,5,1.6,16), 'sc', rec, opt), start, dir, 0.8));
+  g.add(along(part(new T.CylinderGeometry(2.4,2.4,50,8), 'sc', rec, opt), start, dir, 25));
+  (opt ? HWopt : HW).add(g); count('sc', rec, opt);
+}
+function plateBox(cat, w,h,d, x,y,z, rec, opt){
+  const m = part(new T.BoxGeometry(w,h,d), cat, rec, opt);
+  m.position.set(x+w/2, y+h/2, z+d/2);
+  (opt ? HWopt : HW).add(m);
+}
+const R3 = (x,y,z)=> new T.Vector3(x,y,z);
+const SIDES = [ { name:'左', x0:0, dir:1 }, { name:'右', x0:W, dir:-1 } ];
+const cleatMid = t => t.top - BT - APRON/2;
+
+/* ---- ① 托条螺栓 M6×60：每根托条 4 颗，2 颗穿立柱、2 颗穿斜腿 ---- */
+TIERS.forEach((t, i)=>{
+  const y = cleatMid(t);
+  SIDES.forEach(sd=>{
+    const legZ = i === 0 ? [legBack(y)+25, WALL + tierD(t) - BT - 28] : [legBack(y)+40, legBack(y)+100];
+    [[WALL+40,'立柱'],[WALL+100,'立柱'],[legZ[0],'斜腿'],[legZ[1],'斜腿']].forEach(([z, host], k)=>{
+      bolt('b60', R3(sd.x0, y, z), R3(sd.dir,0,0), LX + BT, {
+        mud:true,
+        short:'托条 ↔ 立柱、斜腿',
+        title:'M6×60 螺栓 · 两面大垫圈',
+        where:`第 ${i+1} 层托条 · ${sd.name}侧 · 穿${host}`,
+        joins:`${host}（22）＋ 托条（22）。螺栓头在外侧，螺母在托条这一面。` + (i === 0 && k === 3 ? ' 这一颗同时穿过第 1 层前裙板的角码。' : '')
+      });
+    });
+  });
+});
+
+/* ---- ④ 裙板两端角码：第 1、2 层保留，第 3 层可省 ---- */
+function apronBracket(i, sd, which, opt, merged){
+  const t = TIERS[i], y = cleatMid(t), d = tierD(t);
+  const xc = sd.dir > 0 ? LX + BT : W - LX - BT;            // 托条内侧面
+  const back = which === 'back';
+  const zf = back ? WALL + BT : WALL + d - BT;               // 裙板朝里的那一面
+  const dz = back ? 1 : -1;
+  const rec = { short:'裙板两端 ↔ 托条', title:'50mm 角码', where:`第 ${i+1} 层${back?'后':'前'}裙板 · ${sd.name}端`,
+    joins:'一边贴裙板、一边贴托条，把裙板的一端挂在托条上。',
+    why: opt ? '可以省：这一层只放几公斤，裙板靠层板螺丝传力就够了。' : '' };
+  const ax0 = sd.dir > 0 ? xc : xc - 50;
+  plateBox('br', 50, 50, 3, ax0, y-25, back ? zf : zf-3, rec, opt);                       // 贴裙板的一片
+  plateBox('br', 3, 50, 50, sd.dir > 0 ? xc : xc-3, y-25, back ? zf : zf-50, rec, opt);   // 贴托条的一片
+  if (!opt) CAT.br.req += 1, CAT.br.where.add(rec.short); else CAT.br.opt += 1;
+  if (!merged){
+    bolt('b40', R3(xc + sd.dir*28, y, zf + dz*3), R3(0,0,-dz), BT + 3, {
+      short:'角码 ↔ 裙板', title:'M6×40 螺栓', mud:true, where:`第 ${i+1} 层${back?'后':'前'}裙板 · ${sd.name}端角码`,
+      joins:'角码（3）＋ 裙板（22）。', why: rec.why }, opt);
+  }
+  if (back){
+    /* 后裙板：角码贴托条的那一边，直接套在离立柱背面 40 的那颗托条螺栓上，不另加螺栓 */
+    rec.joins += ' 贴托条那一边和托条螺栓共用一颗（离立柱背面 40 那颗）：拧下螺栓，套上角码再穿回去。';
+  } else if (i === 0){
+    rec.joins += ' 贴托条那一边和斜腿上的托条螺栓共用一颗（离立柱背面 469 那颗）：拧下螺栓，套上角码再穿回去。';
+  } else {
+    /* 前裙板：这里在立柱和斜腿之间的空档，托条背后是空的，螺母装在托条外侧 */
+    bolt('b40', R3(xc + sd.dir*3, y, zf - 28), R3(-sd.dir,0,0), BT + 3, {
+      mud:true, short:'角码 ↔ 托条', title:'M6×40 螺栓', where:`第 ${i+1} 层前裙板 · ${sd.name}端角码`,
+      joins:'角码（3）＋ 托条（22）。这里在立柱和斜腿之间的空档，托条背后是空的，螺母装在托条外侧。', why: rec.why }, opt);
+  }
+}
+[0,1,2].forEach(i=> SIDES.forEach(sd=>['back','front'].forEach(w=> apronBracket(i, sd, w, i >= 2, i === 0 && w === 'back'))));
+
+/* ---- ⑤ 顶挡条两端角码 ---- */
+SIDES.forEach(sd=>{
+  const xc = sd.dir > 0 ? LX : W - LX, zf = WALL + BT, y = DY + APRON/2;
+  const rec = { short:'顶挡条 ↔ 立柱', title:'50mm 角码', where:`顶挡条 D · ${sd.name}端`, joins:'把顶挡条固定在立柱上。人字撑顶端的力经这里传到立柱。' };
+  plateBox('br', 50, 50, 3, sd.dir > 0 ? xc : xc-50, y-25, zf, rec);
+  plateBox('br', 3, 50, 50, sd.dir > 0 ? xc : xc-3, y-25, zf, rec);
+  CAT.br.req += 1; CAT.br.where.add(rec.short);
+  bolt('b40', R3(xc + sd.dir*28, y, zf + 3), R3(0,0,-1), BT + 3, { short:'角码 ↔ 顶挡条', title:'M6×40 螺栓', mud:true, where:`顶挡条 D · ${sd.name}端角码`, joins:'角码（3）＋ 顶挡条（22）。' });
+  bolt('b40', R3(sd.x0, y, zf + 28), R3(sd.dir,0,0), LX + 3, { mud:true, short:'角码 ↔ 立柱', title:'M6×40 螺栓', where:`顶挡条 D · ${sd.name}端角码`, joins:'立柱（22）＋ 角码（3）。' });
+});
+
+/* ---- ⑥ 人字撑：两端螺栓，中段自攻螺丝 ---- */
+const bx = y => LX + 40 + (y - 45) * ((W/2 - 20) - (LX + 40)) / ((H - 30) - 45);
+SIDES.forEach(sd=>{
+  const X = x => sd.dir > 0 ? x : W - x;
+  const yb = cleatMid(TIERS[0]);
+  bolt('b60', R3(X(bx(yb)), yb, WALL - BT), R3(0,0,1), 2*BT + 3, { short:'人字撑两端', title:'M6×60 螺栓', mud:true,
+    where:`人字撑下端 · ${sd.name}`, joins:'人字撑（22）＋ 第 1 层后裙板（22）＋ 角码（3）。一颗螺栓同时固定三样。' });
+  bolt('b60', R3(X(bx(DY + APRON/2)), DY + APRON/2, WALL - BT), R3(0,0,1), 2*BT, { short:'人字撑两端', title:'M6×60 螺栓', mud:true,
+    where:`人字撑上端 · ${sd.name}`, joins:'人字撑（22）＋ 顶挡条 D（22）。' });
+  [1,2].forEach(i=>{
+    const y = cleatMid(TIERS[i]);
+    [-14, 14].forEach(off=> screw(R3(X(bx(y)) + off, y, WALL - BT), R3(0,0,1), { short:'人字撑中段 ↔ 后裙板', title:'10G×50 自攻螺丝',
+      where:`人字撑 · ${sd.name} · 经过第 ${i+1} 层后裙板`, joins:'人字撑（22）＋ 后裙板（22），尖头会在裙板内侧露出 6mm，在层板底下看不见。' }));
+  });
+});
+
+/* ---- ⑦ 层板螺丝 ---- */
+TIERS.forEach((t, i)=>{
+  const d = tierD(t), yTop = t.top;
+  for (let j=0; j<t.k; j++){
+    const zb = WALL + j*(BW+GAP);
+    [LX + 11, W - LX - 11].forEach(x=> [zb + 35, zb + 105].forEach(z=>
+      screw(R3(x, yTop, z), R3(0,-1,0), { short:'层板 ↔ 托条、裙板', title:'10G×50 自攻螺丝', where:`第 ${i+1} 层 · 第 ${j+1} 块板端头`, joins:'层板（22）拧进托条的原厂边。' })));
+    const edges = [];
+    if (j === 0) edges.push([WALL + 11, '后裙板']);
+    if (j === t.k - 1 && !t.strip) edges.push([WALL + d - 11, '前裙板']);
+    edges.forEach(([z, nm])=> [140,260,380,500,620,740,860].forEach(x=>
+      screw(R3(x, yTop, z), R3(0,-1,0), { short:'层板 ↔ 托条、裙板', title:'10G×50 自攻螺丝', where:`第 ${i+1} 层 · 沿${nm}每 120`, joins:`层板（22）拧进${nm}的原厂边，让两者合成 L 形梁。` })));
+  }
+  if (t.strip){
+    const zs = WALL + t.k*(BW+GAP);
+    [LX + 11, W - LX - 11].forEach(x=> screw(R3(x, yTop, zs + 34), R3(0,-1,0), { short:'层板 ↔ 托条、裙板', title:'10G×50 自攻螺丝', where:'第 1 层 · 前沿条端头', joins:'前沿条（22）拧进托条。' }));
+    [140,260,380,500,620,740,860].forEach(x=> screw(R3(x, yTop, WALL + d - 11), R3(0,-1,0), { short:'层板 ↔ 托条、裙板', title:'10G×50 自攻螺丝', where:'第 1 层 · 沿前裙板每 120', joins:'前沿条（22）拧进前裙板的原厂边。' }));
+  }
+  if (i === 0) [W/3, 2*W/3].forEach(x=> [1,2].forEach(j=> screw(R3(x, yTop, WALL + j*(BW + GAP) + 70), R3(0,-1,0), { short:'层板 ↔ 托条、裙板', title:'10G×50 自攻螺丝', where:'第 1 层 · 中间两块板', joins:'层板拧进下面的垫块。' })));
+});
+
+/* ---- ⑧ 防滑垫 ---- */
+SIDES.forEach(sd=>{
+  const x = sd.dir > 0 ? 0 : W - LX;
+  [[WALL+20,'立柱脚'],[legBack(0)+30,'斜腿脚']].forEach(([z,nm])=>{
+    plateBox('pad', LX, 5, 60, x, -5, z, { short:'脚底、靠墙处', title:'防滑垫', where:`${sd.name}侧${nm}底下`, joins:'防止架子在地板上滑。' });
+    CAT.pad.req += 1; CAT.pad.where.add('脚底、靠墙处');
+  });
+  [280, 1080].forEach(y=>{
+    plateBox('pad', LX, 50, 4, x, y + 25, WALL - 2*BT - 4, { short:'脚底、靠墙处', title:'防滑垫', where:`${sd.name}侧立柱背后 · 离地 ${y}`, joins:'贴在边角料垫块外面，顶住墙，保护墙面。' });
+    CAT.pad.req += 1;
+  });
+});
+
+/* ================= 植物 ================= */
+const mPotBlack = new T.MeshLambertMaterial({ color:0x2a2d2c });
+const mPotBeige = new T.MeshLambertMaterial({ color:0xc9bba5 });
+const mPotRed = new T.MeshLambertMaterial({ color:0x9a2f22 });
+const mPotTerra = new T.MeshLambertMaterial({ color:0xa8653f });
+const mPotWhite = new T.MeshLambertMaterial({ color:0xe8e6df });
+const mPotCeladon = new T.MeshLambertMaterial({ color:0x8c9a88 });
+const mSoil = new T.MeshLambertMaterial({ color:0x3b2d24 });
+const mJade = new T.MeshLambertMaterial({ color:0x5f9a45 });
+const mJadeY = new T.MeshLambertMaterial({ color:0x9fb44a });
+const mTrunk = new T.MeshLambertMaterial({ color:0x8d8f86 });
+const mAeon = new T.MeshLambertMaterial({ color:0x8fc24e });
+const mEche = new T.MeshLambertMaterial({ color:0x9fb2b4 });
+const mEcheR = new T.MeshLambertMaterial({ color:0x8aa05a });
+const mPink = new T.MeshLambertMaterial({ color:0xd8a6b4 });
+const mAloe = new T.MeshLambertMaterial({ color:0x4f6b48 });
+const mPearl = new T.MeshLambertMaterial({ color:0x7fae57 });
+const mNanoukP = new T.MeshLambertMaterial({ color:0xd9b3cf, side:T.DoubleSide });
+const mNanoukG = new T.MeshLambertMaterial({ color:0x6f8f69, side:T.DoubleSide });
+function rng(seed){ return ()=>((seed = (seed*16807) % 2147483647) / 2147483647); }
+const R = rng(42);
+
+function add(mesh, x, y, z, grp){ mesh.position.set(x,y,z); mesh.castShadow = true; mesh.receiveShadow = true; grp.add(mesh); return mesh; }
+function roundPot(g, d, h, mat){
+  add(new T.Mesh(new T.CylinderGeometry(d/2, d/2*0.8, h, 28), mat), 0, h/2, 0, g);
+  add(new T.Mesh(new T.CylinderGeometry(d/2-6, d/2-6, 4, 24), mSoil), 0, h-8, 0, g);
+}
+function rectPot(g, w, dz, h, mat){
+  add(new T.Mesh(new T.BoxGeometry(w, h, dz), mat), 0, h/2, 0, g);
+  add(new T.Mesh(new T.BoxGeometry(w-14, 4, dz-14), mSoil), 0, h-6, 0, g);
+}
+function rosette(g, x, y, z, r, mat, rings){
+  for (let ring=0; ring<(rings||3); ring++){
+    const n = 8 + ring*2, rad = r*(1 - ring*0.28);
+    for (let k=0;k<n;k++){
+      const a = k/n*Math.PI*2 + ring*0.37;
+      const l = new T.Mesh(new T.SphereGeometry(1, 10, 8), mat);
+      l.scale.set(rad*0.5, rad*0.18, rad*0.26);
+      l.position.set(x + Math.cos(a)*rad*0.55, y + ring*r*0.12, z + Math.sin(a)*rad*0.55);
+      l.rotation.y = -a; l.rotation.z = 0.35;
+      l.castShadow = true; g.add(l);
+    }
+  }
+}
+function jadeTree(g, top, spread, height, leaf){
+  const trunk = add(new T.Mesh(new T.CylinderGeometry(18, 28, height*0.45, 10), mTrunk), 0, top + height*0.22, 0, g);
+  for (let b=0;b<6;b++){
+    const a = b/6*Math.PI*2 + R()*0.5;
+    const r = spread*(0.25 + R()*0.3);
+    const by = top + height*(0.45 + R()*0.35);
+    const cx = Math.cos(a)*r, cz = Math.sin(a)*r;
+    const len = Math.hypot(cx, by - (top + height*0.4), cz);
+    const br = new T.Mesh(new T.CylinderGeometry(7, 12, len, 8), mTrunk);
+    br.position.set(cx/2, (by + top + height*0.4)/2, cz/2);
+    br.quaternion.setFromUnitVectors(new T.Vector3(0,1,0), new T.Vector3(cx, by - (top + height*0.4), cz).normalize());
+    br.castShadow = true; g.add(br);
+    for (let k=0;k<9;k++){
+      const lf = new T.Mesh(new T.SphereGeometry(1, 10, 8), leaf);
+      lf.scale.set(26, 9, 18);
+      lf.position.set(cx + (R()-.5)*90, by + (R()-.3)*60, cz + (R()-.5)*90);
+      lf.rotation.set(R()*1.2, R()*3, R()*1.2); lf.castShadow = true; g.add(lf);
+    }
+  }
+}
+function aeonium(g, top){
+  const stems = [[0,0,430],[-90,40,350],[80,-30,390],[40,90,320],[-60,-80,280]];
+  stems.forEach(([sx,sz,hgt],i)=>{
+    const st = new T.Mesh(new T.CylinderGeometry(9, 14, hgt, 8), mTrunk);
+    st.position.set(sx/2, top + hgt/2, sz/2);
+    st.rotation.set(sz/hgt*0.9, 0, -sx/hgt*0.9); st.castShadow = true; g.add(st);
+    rosette(g, sx, top + hgt, sz, 95 - i*6, mAeon, 3);
+  });
+}
+function nanouk(g, top){
+  for (let k=0;k<12;k++){
+    const a = k/12*Math.PI*2 + R()*0.4;
+    const hgt = 150 + R()*170;
+    const blade = new T.Mesh(new T.PlaneGeometry(34, 90), k%3 ? mNanoukP : mNanoukG);
+    const r = 10 + R()*30;
+    blade.position.set(Math.cos(a)*r, top + 40 + R()*(hgt-60), Math.sin(a)*r);
+    blade.rotation.set((R()-.5)*0.6, -a, (R()-.5)*0.9);
+    blade.castShadow = true; g.add(blade);
+  }
+  const st = new T.Mesh(new T.CylinderGeometry(5, 6, 260, 6), mNanoukG);
+  st.position.set(0, top + 130, 0); g.add(st);
+}
+function pearls(g, top, d, frontZ){
+  for (let s=0;s<9;s++){
+    const a = s/9*Math.PI*2;
+    let px = Math.cos(a)*d*0.3, pz = Math.sin(a)*d*0.3, py = top + 6;
+    for (let b=0;b<14;b++){
+      const bead = new T.Mesh(new T.SphereGeometry(6, 8, 6), mPearl);
+      bead.position.set(px, py, pz); bead.castShadow = true; g.add(bead);
+      /* 往前垂：先爬到盆沿，再往下掉 */
+      if (pz < frontZ) { pz += 11; px += (R()-.5)*6; }
+      else { py -= 13; pz += 1.5; }
+    }
+  }
+}
+
+/* 摆放：tier = 第几层（0 起），x 中心，z 中心（离墙） */
+const PLANTS = [
+  // ---- 第 1 层（净高 650）
+  { tier:0, x:240, z:414, name:'大玉树 70+ cm', build:g=>{ roundPot(g,300,190,mPotBeige); jadeTree(g,190,230,520,mJade); } },
+  { tier:0, x:530, z:470, name:'红盆盆景',     build:g=>{ rectPot(g,200,140,70,mPotRed); jadeTree(g,70,110,190,mJadeY); } },
+  { tier:0, x:800, z:460, name:'树状莲花掌',   build:g=>{ roundPot(g,200,180,mPotBlack); aeonium(g,180); } },
+  ...[130,310,490,670,850].map(x=>({ tier:0, x, z:WALL+72, name: x===490 ? '紫露草 Nanouk ×5' : '', build:g=>{ roundPot(g,140,130,mPotBlack); nanouk(g,130); } })),
+  // ---- 第 2 层 前排（上方不遮挡）
+  { tier:1, x:140, z:WALL+215, name:'大莲座',     build:g=>{ roundPot(g,165,150,mPotBlack); rosette(g,0,150,0,88,mEche,4); } },
+  { tier:1, x:330, z:WALL+225, name:'斑点芦荟',   build:g=>{ rectPot(g,130,130,95,mPotTerra); for(let k=0;k<7;k++){ const lf=new T.Mesh(new T.ConeGeometry(14,150,4),mAloe); lf.position.set((k-3)*9,95+75,(k%2?8:-8)); lf.rotation.z=(k-3)*0.12; lf.castShadow=true; g.add(lf);} } },
+  { tier:1, x:490, z:WALL+235, name:'粉色方盆',   build:g=>{ rectPot(g,90,100,85,mPotTerra); rosette(g,0,85,0,42,mPink,3); } },
+  { tier:1, x:630, z:WALL+235, name:'红边石莲',   build:g=>{ roundPot(g,100,95,mPotWhite); rosette(g,0,95,0,60,mEcheR,3); } },
+  { tier:1, x:800, z:WALL+230, name:'椭圆瓷盆',   build:g=>{ const b=new T.Mesh(new T.CylinderGeometry(70,58,60,28),mPotCeladon); b.scale.z=0.72; add(b,0,30,0,g); } },
+  // ---- 第 2 层 后排（第 3 层下面，偏阴）
+  { tier:1, x:170, z:WALL+80, name:'珍珠吊兰 ×2', build:g=>{ roundPot(g,165,140,mPotBlack); pearls(g,140,165,60); } },
+  { tier:1, x:370, z:WALL+80, name:'',            build:g=>{ roundPot(g,150,130,mPotBlack); pearls(g,130,150,55); } },
+  // ---- 第 3 层（最上层，后沿有顶挡条）
+  ...[95,225,355].map((x,i)=>({ tier:2, x, z:WALL+82, name: i===1 ? '玉树小苗 ×3' : '', build:g=>{ roundPot(g,110,105,mPotBlack); jadeTree(g,105,55,110,mJade); } })),
+  { tier:2, x:490, z:WALL+82, name:'圆叶多肉',   build:g=>{ roundPot(g,110,105,mPotBlack); rosette(g,0,105,0,50,mJade,3); } },
+  ...[630,760,890].map((x,i)=>({ tier:2, x, z:WALL+82, name: i===1 ? '休眠 / 扦插小盆 ×3' : '', build:g=>{ roundPot(g,110,100,mPotBlack); } }))
+];
+
+function label(text, x, y, z){
+  const c = document.createElement('canvas'), g = c.getContext('2d'), f = 40;
+  g.font = `500 ${f}px "Noto Sans SC", "PingFang SC", sans-serif`;
+  c.width = Math.ceil(g.measureText(text).width) + 36; c.height = f + 24;
+  const g2 = c.getContext('2d');
+  g2.fillStyle = 'rgba(31,37,33,.86)';
+  const r = 14; g2.beginPath();
+  g2.moveTo(r,0); g2.lineTo(c.width-r,0); g2.quadraticCurveTo(c.width,0,c.width,r);
+  g2.lineTo(c.width,c.height-r); g2.quadraticCurveTo(c.width,c.height,c.width-r,c.height);
+  g2.lineTo(r,c.height); g2.quadraticCurveTo(0,c.height,0,c.height-r); g2.lineTo(0,r); g2.quadraticCurveTo(0,0,r,0); g2.fill();
+  g2.font = `500 ${f}px "Noto Sans SC", "PingFang SC", sans-serif`;
+  g2.fillStyle = '#f4f2ec'; g2.textBaseline = 'middle'; g2.fillText(text, 18, c.height/2 + 2);
+  const s = new T.Sprite(new T.SpriteMaterial({ map:new T.CanvasTexture(c), depthTest:false, transparent:true }));
+  const k = 0.55; s.scale.set(c.width*k, c.height*k, 1); s.position.set(x, y, z);
+  s.renderOrder = 10;
+  s.userData.base = s.position.clone(); s.userData.ex = new T.Vector3(); movers.push(s);
+  groups.labels.add(s);
+}
+
+PLANTS.forEach(p=>{
+  const g = new T.Group();
+  p.build(g);
+  const t = TIERS[p.tier];
+  g.position.set(p.x - 22, t.top, p.z);
+  g.userData.base = g.position.clone(); g.userData.ex = V(0,1,0, 320 + p.tier*90);
+  movers.push(g); groups.plants.add(g);
+  if (p.name){
+    const heights = [560, 250, 170];
+    label(p.name, p.x - 22, t.top + heights[p.tier], p.z + 40);
+  }
+});
+
+root.position.set(-W/2, 0, 0);
+
+/* ================= 交互 ================= */
+const map = { L_plants:'plants', L_labels:'labels', L_shelf:'shelf', L_apron:'apron', L_frame:'frame', L_steel:'steel' };
+Object.entries(map).forEach(([id,k])=>{
+  const el = document.getElementById(id);
+  el.addEventListener('change', ()=>{ groups[k].visible = el.checked; if (typeof applyHw === 'function') applyHw(); });
+});
+document.getElementById('L_wall').addEventListener('change', e=>{ wall.visible = e.target.checked; });
+document.getElementById('ex').addEventListener('input', e=>{
+  const t = e.target.value/100;
+  movers.forEach(o=> o.position.copy(o.userData.base).addScaledVector(o.userData.ex, t));
+});
+
+
+/* ---- 五金图例 ---- */
+const hwList = document.getElementById('hwList');
+let isoCat = null;
+const ORDER = ['b100','b60','b40','br','sc','plate','pad'];
+ORDER.forEach(k=>{
+  const c = CAT[k]; if (!c.req && !c.opt) return;
+  const b = document.createElement('button');
+  b.className = 'hwrow'; b.type = 'button'; b.setAttribute('aria-pressed','false'); b.dataset.cat = k;
+  const hex = '#' + c.color.toString(16).padStart(6,'0');
+  b.innerHTML = `<span class="dot" style="background:${hex}"></span><span><b>${c.label}</b> · ${c.sub}</span>` +
+    `<span class="c">${c.req || '—'}${c.opt ? ` <i>+${c.opt}</i>` : ''}</span><span class="w">${[...c.where].join('；') || '全部可省'}</span>`;
+  b.addEventListener('click', ()=>{ isoCat = isoCat === k ? null : k; applyHw(); });
+  hwList.appendChild(b);
+});
+const woodMats = [matGrain, matGrainD, matStrip, matHolesU, matHolesV];
+function applyHw(){
+  const xray = document.getElementById('L_xray').checked;
+  const showHw = document.getElementById('L_hw').checked;
+  const exploded = +document.getElementById('ex').value > 0;
+  HW.visible = showHw && !exploded;
+  HWopt.visible = showHw && !exploded && document.getElementById('L_opt').checked;
+  woodMats.forEach(m=>{ m.transparent = xray; m.opacity = xray ? 0.13 : 1; m.depthWrite = !xray; m.needsUpdate = true; });
+  groups.plants.visible = !xray && document.getElementById('L_plants').checked;
+  groups.labels.visible = !xray && document.getElementById('L_labels').checked;
+  Object.entries(CAT).forEach(([k,c])=>{
+    const dim = isoCat && isoCat !== k;
+    c.mat.transparent = !!dim; c.mat.opacity = dim ? 0.1 : 1; c.mat.depthWrite = !dim; c.mat.needsUpdate = true;
+    c.ghost.opacity = dim ? 0.06 : 0.38; c.ghost.needsUpdate = true;
+  });
+  hwList.querySelectorAll('.hwrow').forEach(r=> r.setAttribute('aria-pressed', r.dataset.cat === isoCat));
+}
+['L_hw','L_xray','L_opt'].forEach(id=> document.getElementById(id).addEventListener('change', applyHw));
+document.getElementById('ex').addEventListener('input', applyHw);
+applyHw();
+
+/* ---- 悬停提示 ---- */
+const tip = document.getElementById('tip');
+const ray = new T.Raycaster(), mouse = new T.Vector2();
+function hover(e){
+  if (!HW.visible && !HWopt.visible){ tip.hidden = true; return; }
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set(((e.clientX - r.left)/r.width)*2 - 1, -((e.clientY - r.top)/r.height)*2 + 1);
+  ray.setFromCamera(mouse, cam);
+  const targets = hwMeshes.filter(m=> (m.userData.opt ? HWopt.visible : HW.visible) && (!isoCat || m.userData.cat === isoCat));
+  const hit = ray.intersectObjects(targets, false)[0];
+  if (!hit){ tip.hidden = true; el.style.cursor = ''; return; }
+  const rec = hit.object.userData.rec;
+  tip.innerHTML = `<b>${rec.title}</b>${rec.where}<br>${rec.joins}` + (rec.why ? `<br><span class="opt">${rec.why}</span>` : '');
+  tip.hidden = false; el.style.cursor = 'help';
+  const tw = tip.offsetWidth, tht = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - tw - 8, e.clientX + 14) + 'px';
+  tip.style.top = Math.min(window.innerHeight - tht - 8, e.clientY + 14) + 'px';
+}
+
+const target = new T.Vector3(0, 680, 300);
+let rad = 3300, th = 0.62, ph = 1.2;
+/* 视角距离按宽高比 1.0、视角 34° 调的；画布变窄就按比例拉远，整个架子都在画面里 */
+const REF_ASPECT = 1.0, REF_TAN = Math.tan(17 * Math.PI/180);
+function fitScale(){ return (REF_TAN / Math.tan(cam.fov/2 * Math.PI/180)) * Math.max(1, REF_ASPECT / cam.aspect); }
+function place(){
+  ph = Math.max(0.1, Math.min(2.8, ph));            // 超过 π/2 就是从地面以下往上看
+  const r = rad * fitScale();
+  cam.position.set(target.x + r*Math.sin(ph)*Math.sin(th),
+                   target.y + r*Math.cos(ph),
+                   target.z + r*Math.sin(ph)*Math.cos(th));
+  cam.lookAt(target);
+  const behind = Math.cos(th) < 0;
+  wallMat.opacity = behind ? 0.15 : 1; wallMat.depthWrite = !behind;
+  ground.visible = cam.position.y > 0;
+}
+const el = renderer.domElement;
+let drag = null, last = {x:0,y:0}, pinch = 0;
+el.addEventListener('contextmenu', e=>e.preventDefault());
+el.addEventListener('pointerdown', e=>{ drag = (e.button===2 || e.shiftKey) ? 'pan' : 'rot'; last = {x:e.clientX,y:e.clientY}; el.setPointerCapture(e.pointerId); });
+el.addEventListener('pointerup', ()=> drag = null);
+el.addEventListener('pointercancel', ()=> drag = null);
+el.addEventListener('pointermove', e=>{
+  if (!drag){ hover(e); return; }
+  tip.hidden = true;
+  if (pinch) return;
+  const dx = e.clientX-last.x, dy = e.clientY-last.y; last = {x:e.clientX,y:e.clientY};
+  if (drag==='rot'){ th -= dx*0.006; ph -= dy*0.006; }
+  else {
+    const s = rad*0.0012;
+    const r = new T.Vector3().setFromMatrixColumn(cam.matrix,0);
+    const u = new T.Vector3().setFromMatrixColumn(cam.matrix,1);
+    target.addScaledVector(r,-dx*s).addScaledVector(u,dy*s);
+  }
+  place();
+});
+el.addEventListener('wheel', e=>{ e.preventDefault(); rad = Math.max(700, Math.min(8000, rad*(1 + Math.sign(e.deltaY)*0.08))); place(); }, {passive:false});
+el.addEventListener('touchmove', e=>{
+  if (e.touches.length !== 2) return;
+  const a=e.touches[0], c=e.touches[1];
+  const d = Math.hypot(a.clientX-c.clientX, a.clientY-c.clientY);
+  if (pinch){ rad = Math.max(700, Math.min(8000, rad*(pinch/d))); place(); }
+  pinch = d;
+}, {passive:true});
+el.addEventListener('touchend', ()=> pinch = 0);
+const views = {
+  iso:  ()=>{ th=0.62; ph=1.2;  rad=3300; },
+  front:()=>{ th=0;    ph=1.52; rad=3200; },
+  side: ()=>{ th=Math.PI/2; ph=1.52; rad=2400; },
+  back: ()=>{ th=Math.PI*0.86; ph=1.3; rad=3100; }
+};
+document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click', ()=>{ views[b.dataset.v](); target.set(0,680,300); place(); }));
+
+function resize(){
+  const w = stage.clientWidth || window.innerWidth, h = stage.clientHeight || window.innerHeight;
+  cam.aspect = w/h; cam.fov = w < 820 ? 52 : 34;
+  cam.updateProjectionMatrix(); renderer.setSize(w, h);
+  if (typeof place === 'function') place();
+}
+window.addEventListener('resize', resize);
+resize(); place();
+(function loop(){ requestAnimationFrame(loop); renderer.render(scene, cam); })();
+})();
+</script>
+
+</body></html>

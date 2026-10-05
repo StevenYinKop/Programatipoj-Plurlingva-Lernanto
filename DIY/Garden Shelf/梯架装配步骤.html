@@ -1,0 +1,966 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>梯架装配步骤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root{
+    --ground:#e4e6e0;
+    --panel:#fafaf7;
+    --line:#d3d6cd;
+    --ink:#1f2521;
+    --ink2:#505a54;
+    --ink3:#7f8881;
+    --wpc:#6b4a3a;
+    --hl:#d9822b;
+    --hl-soft:#f7e6d3;
+    --sage:#55704a;
+    --sage-soft:#e3eadc;
+    --warn:#9b4f25;
+    --warn-soft:#f3e4d9;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--ground);color:var(--ink);overflow:hidden;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14px;line-height:1.6}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+  .app{display:grid;grid-template-columns:clamp(340px,34vw,400px) minmax(0,1fr);height:100%;width:100%;overflow:hidden}
+  #panel{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+  #stageWrap{position:relative;min-width:0;min-height:0}
+  #stage{position:absolute;inset:0}
+  #stage canvas{display:block;touch-action:none}
+
+  .top{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+  .top h1{margin:0;font-family:"Noto Serif SC",serif;font-weight:600;font-size:20px;letter-spacing:.02em}
+  .top h1 small{font-family:"Noto Sans SC",sans-serif;font-weight:400;font-size:12px;color:var(--ink3);margin-left:8px}
+  .phases{display:flex;flex-direction:column;gap:8px}
+  .phase{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:start}
+  .phase .pn{font-size:11px;color:var(--ink3);line-height:1.3;padding-top:5px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font:inherit;font-family:"JetBrains Mono",monospace;font-size:12px;width:32px;height:28px;border-radius:6px;
+    border:1px solid var(--line);background:#fff;color:var(--ink2);cursor:pointer;padding:0}
+  .chip:hover{border-color:var(--ink3);color:var(--ink)}
+  .chip.done{background:var(--sage-soft);border-color:#c5d3bb;color:var(--sage)}
+  .chip[aria-current="step"]{background:var(--hl);border-color:var(--hl);color:#fff}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+
+  .body{flex:1;overflow:auto;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px}
+  .stepno{font-size:12px;letter-spacing:.1em;color:var(--hl);font-weight:500}
+  .body h2{margin:2px 0 0;font-size:19px;font-weight:700;line-height:1.35;text-wrap:balance}
+  .sec h3{margin:0 0 6px;font-size:11px;letter-spacing:.12em;color:var(--ink3);font-weight:500}
+  .parts{display:flex;flex-direction:column;gap:4px}
+  .part{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;padding:6px 10px;border-radius:6px;background:var(--hl-soft)}
+  .part .code{font-family:"JetBrains Mono",monospace;font-weight:500;color:var(--wpc);min-width:46px}
+  .part .nm{color:var(--ink)}
+  .part .dm{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink2);text-align:right}
+  .part .tag{font-size:11px;color:var(--warn);margin-left:6px}
+  .hw{display:flex;flex-direction:column;gap:4px}
+  .hwi{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;font-size:13px;color:var(--ink2)}
+  .hwi .dot{width:10px;height:10px;border-radius:50%}
+  .hwi b{font-weight:500;color:var(--ink)}
+  .hwi .n{font-family:"JetBrains Mono",monospace;color:var(--ink)}
+  .none{font-size:13px;color:var(--ink3)}
+  ol.how{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+  ol.how li{padding-left:2px}
+  ol.how b{font-weight:700}
+  .note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px}
+  .tip{border-left:3px solid var(--sage);background:var(--sage-soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px}
+
+  .foot{border-top:1px solid var(--line);padding:12px 20px;display:flex;gap:8px;align-items:center}
+  .nav{font:inherit;font-size:14px;padding:9px 14px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .nav.primary{background:var(--ink);border-color:var(--ink);color:#fff;margin-left:auto}
+  .nav:disabled{opacity:.35;cursor:default}
+
+  .opts{position:absolute;top:14px;right:14px;background:rgba(250,250,247,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--ink2)}
+  .opts label{display:flex;gap:7px;align-items:center;cursor:pointer}
+  .opts input{accent-color:var(--hl);margin:0}
+  .legend{position:absolute;left:14px;bottom:14px;background:rgba(250,250,247,.92);border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2);max-width:calc(100% - 28px)}
+  .legend span{display:inline-flex;gap:6px;align-items:center}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .hint{position:absolute;right:14px;bottom:14px;font-size:11px;color:var(--ink3)}
+  @media (max-width:1300px){ .hint{display:none} }
+  #fail{position:absolute;inset:0;display:grid;place-items:center;padding-inline:24px;text-align:center;background:var(--ground);line-height:1.7}
+  #fail[hidden]{display:none}
+
+  @media (max-width:860px){
+    .app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,42%) minmax(0,58%)}
+    #stageWrap{grid-row:1}
+    #panel{grid-row:2;border-right:0;border-top:1px solid var(--line)}
+    .top{padding:12px 16px 10px;gap:8px}
+    .top h1{font-size:17px}
+    .phases{flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:2px}
+    .phase{grid-template-columns:auto;gap:4px;flex:0 0 auto}
+    .phase .pn{padding:0}
+    .chips{flex-wrap:nowrap}
+    .body{padding:14px 16px}
+    .foot{padding:10px 16px}
+    .hint{display:none}
+    .opts{top:10px;right:10px;padding:8px 10px}
+    .legend{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside id="panel">
+    <div class="top">
+      <h1>梯架装配步骤<small>三层 · 1000 × 600 × 1340</small></h1>
+      <div class="phases" id="phases"></div>
+    </div>
+    <div class="body" id="body" aria-live="polite"></div>
+    <div class="foot">
+      <button class="nav" id="prev" type="button">← 上一步</button>
+      <button class="nav primary" id="next" type="button">下一步 →</button>
+    </div>
+  </aside>
+
+  <div id="stageWrap">
+    <div id="stage"></div>
+    <div id="fail" hidden><div><b>3D 视图没能启动。</b><br>这个页面需要浏览器支持 WebGL，请用电脑上的 Chrome 或 Safari 打开。</div></div>
+    <div class="opts">
+      <label><input type="checkbox" id="optLabels" checked>显示本步零件编号</label>
+      <label><input type="checkbox" id="optGhost">之前装好的变半透明</label>
+    </div>
+    <div class="legend">
+      <span><i style="background:#e39a52"></i>本步新装</span>
+      <span><i style="background:#6b4a3a"></i>已装好</span>
+      <span><i style="background:#d9480f;border-radius:50%"></i>M6×60</span>
+      <span><i style="background:#1c6fd6;border-radius:50%"></i>M6×40</span>
+      <span><i style="background:#5f6a72"></i>角码</span>
+      <span><i style="background:#e0a800;border-radius:50%"></i>10G×50 螺丝</span>
+    </div>
+    <div class="hint">拖动旋转 · 滚轮缩放 · 右键平移 · 键盘 ← → 翻步</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const failEl = document.getElementById('fail');
+if (typeof THREE === 'undefined'){ failEl.hidden = false; return; }
+const T = THREE;
+
+/* ================= 尺寸 (mm) ================= */
+const BT = 22, BW = 140, GAP = 10;
+const W = 1000, H = 1340, WALL = 45, LX = 22;
+const FOOT = 600, S = 0.2031;
+const TH = BW / Math.cos(Math.atan(S));          // 斜腿水平方向厚 ≈142
+const legBack  = y => FOOT - TH - S*y;
+const legFront = y => FOOT - S*y;
+const EH = 69, FH = 69;                           // 托条（窄条）、裙板（宽条）高度
+const TIERS = [ {top:122,k:3,strip:true}, {top:794,k:2}, {top:1266,k:1} ];   // 第 1 层：3 块整板 + 1 根前沿条
+const depthOf = k => k*BW + (k-1)*GAP;
+const tierD = i => depthOf(TIERS[i].k) + (TIERS[i].strip ? GAP + 69 : 0);
+const ET = i => TIERS[i].top - BT;                // 托条上沿
+const SIDES = [ {nm:'左', x0:0, dir:1}, {nm:'右', x0:W, dir:-1} ];
+
+/* ================= 场景 ================= */
+const stage = document.getElementById('stage');
+let renderer;
+try { renderer = new T.WebGLRenderer({ antialias:true }); }
+catch(e){ failEl.hidden = false; return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = T.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene = new T.Scene();
+scene.background = new T.Color(0xe4e6e0);
+const cam = new T.PerspectiveCamera(34, 1, 10, 30000);
+scene.add(new T.HemisphereLight(0xf4f6f0, 0x8a8f86, 0.8));
+const sun = new T.DirectionalLight(0xfff3e0, 0.8);
+sun.position.set(1300, 2600, 2000);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-2200, right:2200, top:2800, bottom:-1400, near:100, far:7000 });
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+const fill = new T.DirectionalLight(0xdce8f0, 0.3); fill.position.set(-1800, 900, -1200); scene.add(fill);
+
+const ground = new T.Mesh(new T.PlaneGeometry(9000, 9000), new T.MeshLambertMaterial({ color:0x9aa098 }));
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+const grid = new T.GridHelper(5000, 50, 0x8a9088, 0x929891); grid.position.y = 0.5; scene.add(grid);
+
+function brickTex(){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#9c8d62'; g.fillRect(0,0,512,512);
+  for (let row=0; row*41 < 512; row++){
+    const off = row%2 ? -57 : 0;
+    for (let x=off; x<512; x+=120){
+      const s = 0.95 + Math.random()*0.08;
+      g.fillStyle = `rgb(${Math.round(222*s)},${Math.round(205*s)},${Math.round(150*s)})`;
+      g.fillRect(x, row*41, 115, 36);
+    }
+  }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3, 2.4); return t;
+}
+const wallMat = new T.MeshLambertMaterial({ map:brickTex(), transparent:true });
+const wall = new T.Mesh(new T.PlaneGeometry(3400, 2800), wallMat);
+wall.position.set(0, 1400, 0); wall.receiveShadow = true; scene.add(wall);
+
+/* ================= 材质 ================= */
+function grainTex(base){
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0,0,512,128);
+  for (let i=0;i<70;i++){
+    const y = Math.random()*128, a = 0.05 + Math.random()*0.12;
+    g.strokeStyle = Math.random()<.5 ? `rgba(40,24,16,${a})` : `rgba(255,240,225,${a*0.8})`;
+    g.lineWidth = 0.6 + Math.random()*1.6;
+    g.beginPath(); g.moveTo(0,y);
+    for (let x=0;x<=512;x+=32) g.lineTo(x, y + Math.sin(x*0.02 + i)*2.2);
+    g.stroke();
+  }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; return t;
+}
+function holesTex(base, vertical){
+  const c = document.createElement('canvas');
+  c.width = vertical ? 64 : 360; c.height = vertical ? 360 : 64;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle = '#2b1c15';
+  for (let k=0;k<7;k++){
+    const along = 26 + k*51.5;
+    g.beginPath();
+    if (vertical) g.arc(32, along, 14, 0, Math.PI*2); else g.arc(along, 32, 14, 0, Math.PI*2);
+    g.fill();
+  }
+  return new T.CanvasTexture(c);
+}
+function woodSet(face, hole, emissive){
+  const mk = map => new T.MeshLambertMaterial({ map, emissive: emissive || 0x000000 });
+  return { face: mk(grainTex(face)), hu: mk(holesTex(hole,false)), hv: mk(holesTex(hole,true)) };
+}
+const WOOD = {
+  frame: woodSet('#5a3d30', '#6e4e3e'),
+  board: woodSet('#6b4a3a', '#7a5644'),
+  strip: woodSet('#80594a', '#8a6452'),
+  hl:    woodSet('#e39a52', '#c47a36', 0x3a1c00),
+  temp:  woodSet('#7aa0c8', '#5b7fa6', 0x0a1a2a)
+};
+const pastMats = [];
+['frame','board','strip'].forEach(k=> Object.values(WOOD[k]).forEach(m=> pastMats.push(m)));
+
+function matsFor(w,h,d,set){
+  const longAxis = [w,h,d].indexOf(Math.max(w,h,d));
+  const uv = [[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];
+  const out = [];
+  for (let f=0; f<6; f++){
+    if (Math.floor(f/2) === longAxis){ const [u,v] = uv[f]; out.push(u >= v ? set.hu : set.hv); }
+    else out.push(set.face);
+  }
+  return out;
+}
+function scaleUV(geo, k){
+  const uv = geo.attributes.uv; for (let i=0;i<uv.count;i++){ uv.setXY(i, uv.getX(i)*k, uv.getY(i)*k); } uv.needsUpdate = true;
+}
+
+const HWC = {
+  b60: { label:'M6×60 螺栓', sub:'塑木面垫大垫圈', color:0xd9480f },
+  b40: { label:'M6×40 螺栓', sub:'塑木面垫大垫圈，钢面垫平垫圈', color:0x1c6fd6 },
+  br:  { label:'角码', sub:'40×40，≥ 3 mm 厚', color:0x5f6a72 },
+  sc:  { label:'10G×50 不锈钢螺丝', sub:'预钻 4 mm + 沉头', color:0xe0a800 },
+  pad: { label:'防滑垫', sub:'Slipstick 50 mm', color:0x222222 }
+};
+Object.values(HWC).forEach(c=>{ c.mat = new T.MeshLambertMaterial({ color:c.color, emissive:0x111111 }); });
+const steelPast = new T.MeshLambertMaterial({ color:0x9aa1a6 });
+const padPast = new T.MeshLambertMaterial({ color:0x2a2a2a });
+pastMats.push(steelPast);
+
+/* ================= 零件注册 ================= */
+const root = new T.Group(); scene.add(root);
+root.position.set(-W/2, 0, 0);
+const PARTS = [];       // {obj, step, until, kind, code, name, dim, tag, cat, set, label}
+function reg(obj, step, info){
+  const p = Object.assign({ obj, step, until:null }, info);
+  PARTS.push(p);
+  (info.parent || root).add(obj);
+  return p;
+}
+function setMat(obj, pick){
+  obj.traverse(o=>{ if (o.isMesh) o.material = pick(o); });
+}
+
+/* 普通板件（长方体） */
+function woodBox(step, w,h,d, x,y,z, set, info){
+  const geo = new T.BoxGeometry(w,h,d);
+  const m = new T.Mesh(geo, matsFor(w,h,d,WOOD[set]));
+  m.position.set(x+w/2, y+h/2, z+d/2);
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.dims = [w,h,d];
+  return reg(m, step, Object.assign({ kind:'wood', set }, info));
+}
+/* 侧视轮廓挤出（斜腿、托条）：pts 是 (z, y)，在 x 方向挤出 thick */
+function wedge(step, pts, x, thick, set, info){
+  const sh = new T.Shape();
+  sh.moveTo(pts[0][0], pts[0][1]); for (let i=1;i<pts.length;i++) sh.lineTo(pts[i][0], pts[i][1]); sh.closePath();
+  const geo = new T.ExtrudeGeometry(sh, { depth:thick, bevelEnabled:false });
+  scaleUV(geo, 1/700);
+  const m = new T.Mesh(geo, WOOD[set].face);
+  m.rotation.y = -Math.PI/2;                 // 轮廓 x → 世界 z，挤出方向 → 世界 -x
+  m.position.x = x + thick;
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.extrude = true;
+  return reg(m, step, Object.assign({ kind:'wood', set }, info));
+}
+/* 斜放的条子（人字撑），在 x-y 平面内 */
+function braceStrip(step, x0,y0,x1,y1, z, wdt, set, info){
+  const len = Math.hypot(x1-x0, y1-y0);
+  const m = new T.Mesh(new T.BoxGeometry(len, wdt, BT), matsFor(len, wdt, BT, WOOD[set]));
+  m.position.set((x0+x1)/2, (y0+y1)/2, z + BT/2);
+  m.rotation.z = Math.atan2(y1-y0, x1-x0);
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.dims = [len, wdt, BT];
+  return reg(m, step, Object.assign({ kind:'wood', set }, info));
+}
+
+/* ================= 五金 ================= */
+const Y3 = new T.Vector3(0,1,0);
+const V3 = (x,y,z)=> new T.Vector3(x,y,z);
+function along(mesh, start, dir, off){
+  mesh.quaternion.setFromUnitVectors(Y3, dir.clone().normalize());
+  mesh.position.copy(start).addScaledVector(dir, off); mesh.castShadow = true; return mesh;
+}
+function bolt(step, cat, start, dir, thick, extra){
+  const g = new T.Group();
+  const L = cat === 'b60' ? 60 : 40;
+  const wr = 12, wt = 1.6;
+  const add = (geo, off)=> g.add(along(new T.Mesh(geo, HWC[cat].mat), start, dir, off));
+  add(new T.CylinderGeometry(6,6,4,6), -wt-2);
+  add(new T.CylinderGeometry(wr,wr,wt,20), -wt/2);
+  add(new T.CylinderGeometry(3,3,L,10), -wt + L/2);
+  add(new T.CylinderGeometry(wr,wr,wt,20), thick + wt/2);
+  add(new T.CylinderGeometry(6,6,5,6), thick + wt + 2.5);
+  return reg(g, step, Object.assign({ kind:'hw', cat }, extra||{}));
+}
+function screw(step, start, dir, extra){
+  const g = new T.Group();
+  g.add(along(new T.Mesh(new T.CylinderGeometry(5.5,5.5,2,16), HWC.sc.mat), start, dir, 1));
+  g.add(along(new T.Mesh(new T.CylinderGeometry(2.4,2.4,50,8), HWC.sc.mat), start, dir, 25));
+  return reg(g, step, Object.assign({ kind:'hw', cat:'sc' }, extra||{}));
+}
+/* 角码：一片贴面 A（法线 nA），一片贴面 B（法线 nB），corner 是两面的交线中点 */
+function bracket(step, pts, extra){
+  const g = new T.Group();
+  pts.forEach(([w,h,d,x,y,z])=>{
+    const m = new T.Mesh(new T.BoxGeometry(w,h,d), HWC.br.mat);
+    m.position.set(x+w/2, y+h/2, z+d/2); m.castShadow = true; g.add(m);
+  });
+  return reg(g, step, Object.assign({ kind:'hw', cat:'br' }, extra||{}));
+}
+function pad(step, w,h,d, x,y,z){
+  const m = new T.Mesh(new T.BoxGeometry(w,h,d), HWC.pad.mat);
+  m.position.set(x+w/2, y+h/2, z+d/2);
+  return reg(m, step, { kind:'hw', cat:'pad' });
+}
+
+/* ================= 零件尺寸卡片 ================= */
+const PART_INFO = {
+  A:  { name:'贴墙立柱', dim:'1340 · 整板' },
+  B:  { name:'斜腿', dim:'1367 · 两端各切 28 × 140 小三角' },
+  E1: { name:'第 1 层托条', dim:'上沿 535 · 下沿 549' },
+  E2: { name:'第 2 层托条', dim:'上沿 398 · 下沿 412' },
+  E3: { name:'第 3 层托条', dim:'上沿 302 · 下沿 316' },
+  F:  { name:'裙板', dim:'≈ 912 · 条子立放' },
+  D:  { name:'顶挡条', dim:'≈ 956 · 条子立放' },
+  G:  { name:'人字撑', dim:'≈ 1330 · 条子，两端现场截' },
+  H:  { name:'第 1 层垫块', dim:'≈ 475 × 100 高' },
+  C:  { name:'层板', dim:'≈ 956（实量减 2）' },
+  CS: { name:'第 1 层前沿条', dim:'≈ 954 · 69 条子平放' },
+  J:  { name:'立柱背后垫块', dim:'100 · 两块一组' },
+  TMP:{ name:'临时木条', dim:'任意废料 ≥ 1050' }
+};
+function info(code, full, extra){
+  const base = PART_INFO[code] || {};
+  return Object.assign({ code:full || code, name:base.name, dim:base.dim }, extra||{});
+}
+
+/* =========================================================
+   建模：按装配顺序登记每一个零件和五金
+   ========================================================= */
+
+/* ---- 步骤 1：第一批零件平铺（只在第 1 步显示） ---- */
+const layout = new T.Group(); scene.add(layout);
+(function(){
+  const rows = [
+    ['A', 1340, BW, 'frame'], ['A', 1340, BW, 'frame'],
+    ['B', 1367, BW, 'frame'], ['B', 1367, BW, 'frame']
+  ];
+  let z = -60;
+  rows.forEach(([c, len, wd, set])=>{
+    const p = woodBox(1, len, BT, wd, -len/2, 0, z, set, Object.assign(info(c), { parent:layout, until:1, layoutLabel:true }));
+    z += wd + 40;
+  });
+  z += 30;
+  [['E1',535],['E2',398],['E3',302]].forEach(([c,len])=>{
+    woodBox(1, len, BT, EH, -len - 30, 0, z, 'strip', Object.assign(info(c, c+'左'), { parent:layout, until:1, layoutLabel:true }));
+    woodBox(1, len, BT, EH, 30, 0, z, 'strip', Object.assign(info(c, c+'右'), { parent:layout, until:1, layoutLabel:true }));
+    z += EH + 30;
+  });
+})();
+
+/* ---- 侧架 A + B ---- */
+const STEP_FRAME = { 左:2, 右:6 }, STEP_CLEAT = { 左:[3,4,5], 右:[7,7,7] };
+SIDES.forEach(sd=>{
+  const x = sd.dir > 0 ? 0 : W - LX;
+  const st = STEP_FRAME[sd.nm];
+  woodBox(st, LX, H, BW, x, 0, WALL, 'frame', info('A', 'A '+sd.nm, { off:V3(-sd.dir*130, 0, 0) }));
+  wedge(st, [[legBack(0),0],[FOOT,0],[legFront(H),H],[legBack(H),H]], x, LX, 'frame', info('B', 'B '+sd.nm, { off:V3(-sd.dir*130, 0, 0), center:V3(x, 600, (legBack(600)+legFront(600))/2) }));
+});
+
+/* ---- 托条 E + 托条螺栓 ---- */
+SIDES.forEach(sd=>{
+  TIERS.forEach((t, i)=>{
+    const st = STEP_CLEAT[sd.nm][i], yt = ET(i), yb = yt - EH;
+    const xc = sd.dir > 0 ? LX : W - LX - BT;
+    wedge(st, [[WALL,yb],[WALL,yt],[legFront(yt),yt],[legFront(yb),yb]], xc, BT, 'strip',
+      info('E'+(i+1), 'E'+(i+1)+sd.nm, { off:V3(sd.dir*170, 40, 0), center:V3(xc+11, yt-31, (WALL+legFront(yt))/2) }));
+    const ym = yt - EH/2;
+    const legZ = i === 0 ? [legBack(ym)+25, WALL + tierD(0) - BT - 28]   // 第 1 层：第二颗和前裙板角码共用（离墙 514）
+                         : [legBack(ym)+40, legBack(ym)+100];
+    [WALL+40, WALL+100, ...legZ].forEach(z=>{
+      bolt(st, 'b60', V3(sd.x0, ym, z), V3(sd.dir,0,0), LX + BT);
+    });
+  });
+});
+
+/* ---- 临时木条（第 8 步装，第 11 步拆） ---- */
+woodBox(8, W + 120, 70, BT, -60, 1160, WALL + BW + 10, 'temp', info('TMP', '临时木条', { until:10, off:V3(0,120,60) }));
+
+/* ---- 裙板 F 与角码 ---- */
+const AW = W - 2*(LX + BT);        // 两托条之间
+function apron(step, i, front, withBrackets, mergedBottom){
+  const yt = ET(i), d = tierD(i);
+  const z = front ? WALL + d - BT : WALL;
+  const code = 'F' + (i+1) + (front ? '前' : '后');
+  woodBox(step, AW, FH, BT, LX + BT, yt - FH, z, 'strip', info('F', code, { off:V3(0, 60, front ? 160 : -60) }));
+  if (!withBrackets) return;
+  SIDES.forEach(sd=>{
+    const xi = sd.dir > 0 ? LX + BT : W - LX - BT;          // 托条内侧面
+    const ym = yt - EH/2;
+    const zf = front ? z : z + BT;                           // 裙板朝里的面
+    const zin = front ? -1 : 1;                              // 往架子里面的方向
+    const plateA = [40, 40, 4, sd.dir > 0 ? xi : xi - 40, ym - 20, front ? zf - 4 : zf];        // 贴裙板
+    const plateB = [4, 40, 40, sd.dir > 0 ? xi : xi - 4, ym - 20, front ? zf - 40 : zf];         // 贴托条
+    bracket(step, [plateA, plateB]);
+    const xmid = xi + sd.dir*24;
+    if (!mergedBottom){
+      bolt(step, 'b40', V3(xmid, ym, front ? z + BT : z), V3(0,0,zin), BT + 4);
+    }
+    if (front && i !== 0){
+      /* 前裙板（第 2 层）：托条背后是空档，M6×40 穿 角码 + 托条，螺母在托条外侧；第 1 层和托条螺栓共用 */
+      bolt(step, 'b40', V3(xi - sd.dir*BT, ym, zf - 24), V3(sd.dir,0,0), BT + 4);
+    }
+    /* 后裙板：贴托条那一边套在离立柱背面 40 的那颗托条螺栓上，不另加螺栓 */
+  });
+}
+apron(9, 0, false, true, true);
+apron(10, 1, false, true, false);
+
+/* ---- 顶挡条 D（一根条子，立在第 3 层后沿上方） ---- */
+const DY = TIERS[2].top;
+woodBox(11, W - 2*LX, EH, BT, LX, DY, WALL, 'strip', info('D', 'D', { off:V3(0, 110, 60) }));
+SIDES.forEach(sd=>{
+  const xi = sd.dir > 0 ? LX : W - LX, y = DY + EH/2, zf = WALL + BT;
+  bracket(11, [[40,40,4, sd.dir>0 ? xi : xi-40, y-20, zf], [4,40,40, sd.dir>0 ? xi : xi-4, y-20, zf]]);
+  bolt(11, 'b40', V3(xi + sd.dir*24, y, WALL), V3(0,0,1), BT + 4);
+  bolt(11, 'b40', V3(sd.x0, y, zf + 24), V3(sd.dir,0,0), LX + 4);
+});
+
+/* ---- 人字撑 G ---- */
+const GB = { x:LX + BT + 22, y:ET(0) - EH/2 }, GT = { x:W/2 - 26, y:DY + EH/2 };
+const gx = y => GB.x + (y - GB.y) * (GT.x - GB.x) / (GT.y - GB.y);
+const braceStep = { 左:12, 右:13 };
+SIDES.forEach(sd=>{
+  const X = x => sd.dir > 0 ? x : W - x;
+  const st = braceStep[sd.nm];
+  braceStrip(st, X(GB.x) - sd.dir*10, GB.y - 40, X(GT.x) + sd.dir*6, GT.y + 30, WALL - BT, EH, 'strip',
+    info('G', 'G'+sd.nm, { off:V3(-sd.dir*120, 0, -140), center:V3(X(gx(600)), 600, WALL - 11) }));
+  bolt(st, 'b60', V3(X(GB.x), GB.y, WALL - BT), V3(0,0,1), 2*BT + 4);
+  bolt(st, 'b60', V3(X(GT.x), GT.y, WALL - BT), V3(0,0,1), 2*BT);
+  [1,2].forEach(i=>{
+    const y = ET(i) - FH/2, sst = i === 1 ? st : 19;
+    [-14, 14].forEach(off=> screw(sst, V3(X(gx(y)) + off, y, WALL - BT), V3(0,0,1)));
+  });
+});
+
+/* ---- 前裙板（第 1、2 层，带角码） ---- */
+apron(14, 0, true, true, false);
+apron(14, 1, true, true, false);
+
+/* ---- 第 1 层垫块 H ---- */
+[W/3, 2*W/3].forEach(cx=>{
+  woodBox(15, BT, ET(0), tierD(0) - 2*BT, cx - BT/2, 0, WALL + BT, 'strip', info('H', 'H', { off:V3(0, 120, 0) }));
+});
+
+/* ---- 层板 C 与螺丝 ---- */
+function shelves(step, i){
+  const t = TIERS[i], d = tierD(i), y = ET(i);
+  for (let j=0;j<t.k;j++){
+    const zb = WALL + j*(BW+GAP);
+    woodBox(step, W - 2*LX, BT, BW, LX, y, zb, 'board', info('C', 'C'+(i+1), { off:V3(0, 90, 0), hideLabel: j>0 }));
+    [LX + 11, W - LX - 11].forEach(x=> [zb + 30, zb + 110].forEach(z=> screw(step, V3(x, y + BT, z), V3(0,-1,0))));
+  }
+  if (t.strip){
+    const zs = WALL + t.k*(BW+GAP);
+    woodBox(step, W - 2*LX, BT, EH, LX, y, zs, 'strip', info('CS', 'C1条', { off:V3(0, 90, 60) }));
+    [LX + 11, W - LX - 11].forEach(x=> screw(step, V3(x, y + BT, zs + EH/2), V3(0,-1,0)));
+  }
+  const xs = []; for (let x = 140; x <= W - 140; x += 120) xs.push(x);
+  [WALL + 11, WALL + d - 11].forEach(z=> xs.forEach(x=> screw(step, V3(x, y + BT, z), V3(0,-1,0))));
+  if (i === 0) [W/3, 2*W/3].forEach(x=> [1,2].forEach(j=> screw(step, V3(x, y + BT, WALL + j*(BW + GAP) + 70), V3(0,-1,0))));
+}
+shelves(16, 0);
+shelves(17, 1);
+apron(18, 2, false, false); apron(18, 2, true, false); shelves(18, 2);
+
+/* ---- J 垫块、防滑垫 ---- */
+SIDES.forEach(sd=>{
+  const x = sd.dir > 0 ? 0 : W - LX;
+  [280, 1080].forEach((y, k)=>{
+    woodBox(20, LX, 100, BT, x, y, WALL - BT, 'strip', info('J', 'J', { off:V3(-sd.dir*110, 0, -80), hideLabel: k>0 }));
+    woodBox(20, LX, 100, BT, x, y, WALL - 2*BT, 'strip', info('J', 'J', { hideLabel:true }));
+    pad(20, LX, 50, 4, x, y + 25, WALL - 2*BT - 4);
+    [y + 30, y + 70].forEach(yy=> screw(20, V3(x + 11, yy, WALL - 2*BT), V3(0,0,1)));
+  });
+  pad(20, LX + 4, 4, 70, x - 2, -4, WALL + 35);
+  pad(20, LX + 4, 4, 70, x - 2, -4, legBack(0) + 35);
+});
+
+/* ---- 第 22 步：示意花盆 ---- */
+const potMat = new T.MeshLambertMaterial({ color:0xa8653f }), potDark = new T.MeshLambertMaterial({ color:0x2a2d2c });
+const leaf = new T.MeshLambertMaterial({ color:0x7aa36a });
+function pot(x, y, z, dia, h, dark){
+  const g = new T.Group();
+  const b = new T.Mesh(new T.CylinderGeometry(dia/2, dia/2*0.8, h, 24), dark ? potDark : potMat);
+  b.position.set(x, y + h/2, z); b.castShadow = true; g.add(b);
+  const l = new T.Mesh(new T.SphereGeometry(dia*0.42, 16, 12), leaf);
+  l.scale.y = 0.6; l.position.set(x, y + h + dia*0.12, z); l.castShadow = true; g.add(l);
+  return reg(g, 21, { kind:'deco' });
+}
+pot(240, TIERS[0].top, 414, 300, 190); pot(530, TIERS[0].top, 460, 200, 70); pot(790, TIERS[0].top, 460, 200, 180, true);
+[130, 320, 510, 700, 880].forEach(x=> pot(x, TIERS[0].top, WALL + 72, 140, 130, true));
+[130, 310, 470, 620, 790].forEach((x,k)=> pot(x, TIERS[1].top, WALL + 220, k===0 ? 165 : 110, 110, k%2===0));
+[180, 380].forEach(x=> pot(x, TIERS[1].top, WALL + 80, 155, 135, true));
+[130, 280, 430, 580, 730, 880].forEach(x=> pot(x, TIERS[2].top, WALL + 72, 110, 105, true));
+
+/* ================= 标签 ================= */
+function makeLabel(text){
+  const c = document.createElement('canvas'), g = c.getContext('2d'), f = 44;
+  g.font = `600 ${f}px "JetBrains Mono", "Noto Sans SC", monospace`;
+  c.width = Math.ceil(g.measureText(text).width) + 40; c.height = f + 26;
+  const g2 = c.getContext('2d');
+  g2.fillStyle = '#d9822b';
+  const r = 16; g2.beginPath();
+  g2.moveTo(r,0); g2.lineTo(c.width-r,0); g2.quadraticCurveTo(c.width,0,c.width,r);
+  g2.lineTo(c.width,c.height-r); g2.quadraticCurveTo(c.width,c.height,c.width-r,c.height);
+  g2.lineTo(r,c.height); g2.quadraticCurveTo(0,c.height,0,c.height-r); g2.lineTo(0,r); g2.quadraticCurveTo(0,0,r,0); g2.fill();
+  g2.font = `600 ${f}px "JetBrains Mono", "Noto Sans SC", monospace`;
+  g2.fillStyle = '#ffffff'; g2.textBaseline = 'middle'; g2.fillText(text, 20, c.height/2 + 2);
+  const s = new T.Sprite(new T.SpriteMaterial({ map:new T.CanvasTexture(c), depthTest:false, transparent:true }));
+  s.scale.set(c.width*0.62, c.height*0.62, 1); s.renderOrder = 20;
+  return s;
+}
+const tmpBox = new T.Box3();
+PARTS.forEach(p=>{
+  if (p.kind !== 'wood' || !p.code || p.hideLabel) return;
+  const s = makeLabel(p.code);
+  let c;
+  if (p.center) c = p.center.clone();
+  else { p.obj.updateMatrixWorld(true); tmpBox.setFromObject(p.obj); c = tmpBox.getCenter(new T.Vector3()); (p.parent || root).worldToLocal(c); }
+  if (p.layoutLabel) c.y += 70;
+  if (p.off) c.add(p.off);
+  s.position.copy(c);
+  (p.parent || root).add(s);
+  p.label = s;
+});
+
+/* =========================================================
+   步骤内容
+   ========================================================= */
+const PI = Math.PI;
+const STEPS = [
+  { phase:0, title:'认识第一批零件', cam:{ t:[0,0,380], th:0, ph:0.55, r:2900 },
+    parts:[['A','A × 2'],['B','B × 2'],['E1','E1左 · E1右'],['E2','E2左 · E2右'],['E3','E3左 · E3右']],
+    how:[
+      '先截 R1–R7 七段坯料（长度见施工文件），R1–R5、R7 从正中间那道筋<b>对半劈开</b>（每条约 69 宽），R6 劈出一条 100 宽。靠山调一次就能劈完。',
+      '每根条子劈完马上在<b>原厂边画 ↑</b>，之后托条、裙板都是原厂边朝上。',
+      '只截第一批：<b>A × 2、B × 2、E × 6</b>。其余条子先留长，写上 R1、R2…',
+      '<b>B</b>（不用量角器）：先直角截一段 <b>1396</b>。底端在<b>靠墙那条长边</b>上量 28 mm 做记号，连到对面的角，切掉这个 28 × 140 的小三角；顶端在<b>另一条长边</b>上同样切掉一个。两个三角在对角，切完是平行四边形，<b>两条长边都是 1367</b>。两块 B 叠在一起检查。',
+      '<b>托条 E</b>：前端也是切一个小三角，下沿比上沿长 <b>14 mm</b>。左右一对面贴面叠起来、原厂边都朝上，一刀切，出来就是一左一右。',
+      '编号写在<b>看不见的那一面</b>，用油性笔。'
+    ],
+    note:'B 脚底那个斜口决定腿能不能平贴地面，抗翻能力差四成，这一刀一定要准。' },
+
+  { phase:1, title:'左侧架：摆好立柱 A 和斜腿 B', cam:{ t:[-500,650,320], th:-1.3, ph:1.35, r:2700 },
+    how:[
+      '地上弹一条直线当<b>地面线</b>。侧架下面垫三四根废料，离地约 10 cm，之后螺栓才能从下面穿上来。',
+      '<b>A</b> 外侧面朝下平放，底边贴住地面线。',
+      '<b>B</b> 外侧面朝下，脚底斜口整条贴住地面线。<b>B 脚的背面边离 A 背面边 412</b>。',
+      'B 顶端的背面角正好碰到 A 的正面边，和 A 顶端齐平。',
+      '复核：B 脚外角离 A 背面边 <b>555</b>（加上离墙 45 就是 600）。',
+      '用夹子把 A、B 夹在下面的废料上，不让它们移动。'
+    ],
+    note:'实际是<b>平放在地上</b>做的。图里立着画，只是为了看得清楚。' },
+
+  { phase:1, title:'左侧架：装第 1 层托条 E1左', cam:{ t:[-500,140,320], th:-1.15, ph:1.25, r:1500 },
+    how:[
+      '托条<b>上沿</b>离地面线 <b>100</b>。原厂边（↑）朝上，用角尺确认水平。',
+      '后端和 A 背面齐平，前端斜口和 B 正面齐平。夹住。',
+      '先打 A 上离背面边 40 的孔：6.5 mm 钻头一次穿透托条和 A，<b>穿一颗螺栓先不拧紧</b>。',
+      '再打其余三个孔：A 上离背面 100；B 上两个，<b>离 A 背面边 424 和 469</b>（都在托条高度的中线上）。469 那颗以后要和第 1 层前裙板的角码共用，位置要准。',
+      '螺栓从下面（侧架外侧）往上穿：螺栓头 → 大垫圈 → 侧架 → 托条 → 大垫圈 → 螺母。',
+      '拧到贴紧再转<b>四分之一圈</b>，板面一凹下去就是拧过头了。'
+    ],
+    tip:'电钻离合调到最低档，用 10 mm 套筒批头带螺母，最后四分之一圈手拧。另一只手用扳手卡住螺栓头。' },
+
+  { phase:1, title:'左侧架：装第 2 层托条 E2左', cam:{ t:[-500,760,280], th:-1.15, ph:1.3, r:1500 },
+    how:[
+      '托条上沿离地面线 <b>772</b>。',
+      '方法同上一步：原厂边朝上、后端齐 A、前端斜口齐 B、四颗 M6×60。B 上那两颗离 <b>B 的背面边 40 和 100</b>。',
+      '先打一个孔、穿一颗螺栓，再打下一个，孔就不会错位。'
+    ] },
+
+  { phase:1, title:'左侧架：装第 3 层托条 E3左', cam:{ t:[-500,1220,240], th:-1.15, ph:1.3, r:1600 },
+    how:[
+      'E3左 上沿离地面线 <b>1244</b>，四颗 M6×60，B 上两颗同样离 B 背面边 40 和 100。',
+      '装完量一下三根托条上沿之间的间距：<b>672 · 472</b>。'
+    ],
+    note:'第 3 层托条是立柱和斜腿顶部之间唯一的连接，四颗螺栓一颗都不能省。' },
+
+  { phase:1, title:'右侧架：摆好 A 和 B（镜像）', cam:{ t:[500,650,320], th:1.3, ph:1.35, r:2700 },
+    how:[
+      '同样外侧面朝下平放、垫高，尺寸和左侧架完全一样：412、555、顶端齐平。',
+      '<b>但左右要反过来</b>：墙那一侧（A）要放在和左侧架相反的一头。',
+      '最快的检查办法：把做好的左侧架翻过来，叠在右侧架上面，A 对 A、B 对 B，四条边都对齐。'
+    ],
+    note:'两片侧架立起来时，托条必须面对面朝里。这一步摆反了，后面全部装不上。' },
+
+  { phase:1, title:'右侧架：装托条 E1右–E3右', cam:{ t:[500,650,300], th:1.2, ph:1.35, r:2700 },
+    how:[
+      '上沿高度同左侧：<b>100 · 772 · 1244</b>，螺栓位置也一样。',
+      '每根四颗 M6×60，一共 12 颗。',
+      '装完把两片侧架托条面对面立起来比一下，三层托条应该一样高。'
+    ] },
+
+  { phase:2, title:'立起来，临时定宽 956', cam:{ t:[0,650,300], th:0.55, ph:1.2, r:3300 },
+    how:[
+      '两片侧架立起来，托条面对面朝里，A 靠墙那一边。',
+      '<b>上、下都量</b>两根 A 内侧面之间的距离，调到 <b>956</b>。',
+      '拿一根废料横着夹在两片侧架顶部（图中蓝色），临时固定宽度。',
+      '量两条对角线（左上到右下、右上到左下），相等就是方正的。'
+    ],
+    tip:'先在 A 的底部也临时夹一根，上下都固定住，后面装裙板时不会跑。' },
+
+  { phase:2, title:'第 1 层后裙板 F1后', cut:true, cam:{ t:[0,80,140], th:0.35, ph:0.95, r:1600 },
+    parts:[['F','F1后']],
+    how:[
+      '<b>量</b>第 1 层两根托条内侧面之间的距离（约 912），截 F1后。',
+      '贴墙一侧立放，<b>原厂边朝上，上沿和托条上沿齐平</b>。',
+      '两端各一个角码。<b>贴托条的那一边不打新孔</b>：把托条上离 A 背面 40 的那颗螺栓拧下来，套上角码再穿回去拧紧。',
+      '贴裙板的那一边<b>先不打螺栓</b>，第 12、13 步人字撑下端的 M6×60 会一起穿过这里。'
+    ],
+    note:'角码现场挑：带一颗 M6 螺栓去，孔穿得过才买；厚度至少 3 mm；每条腿 40–50 mm。' },
+
+  { phase:2, title:'第 2 层后裙板 F2后', cut:true, cam:{ t:[0,700,140], th:0.35, ph:1.1, r:1600 },
+    parts:[['F','F2后']],
+    how:[
+      '量第 2 层两根托条内侧面之间的距离，截 F2后。',
+      '和上一步一样：上沿齐托条上沿，两端角码贴托条那一边套在离 A 背面 40 的那颗托条螺栓上。',
+      '贴裙板的那一边各穿一颗 <b>M6×40</b>：螺栓头在裙板背面（墙那面），角码这面垫平垫圈。'
+    ] },
+
+  { phase:2, title:'顶挡条 D', cut:true, cam:{ t:[0,1290,130], th:0.3, ph:1.15, r:1700 },
+    parts:[['D','D']],
+    how:[
+      '量顶部两根 A 内侧面之间的距离（约 956），用一根条子截 D。',
+      'D 立放贴墙一侧，<b>底边离地 1266</b>（就是第 3 层台面的高度），上沿离地约 1335，比 A 顶低一点。',
+      '两端各一个角码：贴 A 的一边 M6×40 穿过 A；贴 D 的一边 M6×40 穿过 D。',
+      '装好后<b>拆掉临时木条</b>。'
+    ],
+    tip:'D 挡住第 3 层的盆不往墙那边掉，也是人字撑顶端的固定点。' },
+
+  { phase:2, title:'左人字撑 G左', cut:true, cam:{ t:[0,650,40], th:PI*0.92, ph:1.35, r:3100 },
+    parts:[['G','G左']],
+    how:[
+      '架子从墙边拉出来，转到背面看。',
+      'G左 先不截两端，整根贴在后裙板和 D 的<b>背面</b>：下端压在 F1后 的左端（正好是那里角码的位置），上端斜到 D 的中间。',
+      '比着实物画线，把两端多余的截掉，上端截成竖直的，留给右边那根碰头。',
+      '<b>下端</b>一颗 M6×60：穿过 G + F1后 + 角码。<b>上端</b>一颗 M6×60：穿过 G + D。',
+      '经过 F2后 的地方拧两颗 10G×50 螺丝。'
+    ] },
+
+  { phase:2, title:'右人字撑 G右，框架完成', cut:true, cam:{ t:[0,650,40], th:PI*0.92, ph:1.35, r:3100 },
+    parts:[['G','G右']],
+    how:[
+      '镜像做 G右：下端压在 F1后 右端，上端和 G左 在 D 中间碰头，摆成"人"字。',
+      '同样两颗 M6×60（下端、上端）+ 经过 F2后 处两颗螺丝。',
+      '<b>推一推顶部</b>：前后左右都应该基本不晃。晃的话，先检查托条螺栓有没有拧紧。'
+    ],
+    tip:'到这一步框架已经是完整、自己能站稳的结构。后面所有零件都可以实量再切。' },
+
+  { phase:3, title:'第 1、2 层前裙板 F1前、F2前', cut:true, cam:{ t:[0,380,400], th:0.5, ph:1.1, r:2400 },
+    parts:[['F','F1前'],['F','F2前']],
+    how:[
+      '分别量两层托条内侧面之间的距离，截 F1前、F2前。',
+      '立放在这一层台面的最前沿：F1前 的正面离墙 <b>564</b>，F2前 的正面离墙 335。上沿齐托条上沿。',
+      '两端各一个角码，贴裙板的一边都是 M6×40 穿 角码 + 裙板。',
+      '<b>F1前</b>：角码贴托条的一边不另打孔，把 B 上离 A 背面 469 的那颗托条螺栓拧下来，套上角码再穿回去（同第 9 步后裙板的做法）。',
+      '<b>F2前</b>：这里在 A 和 B 之间的空档，托条背后是空的，贴托条的一边 M6×40 穿 角码 + 托条，螺母在托条外侧。'
+    ] },
+
+  { phase:3, title:'第 1 层垫块 H × 2', cut:true, cam:{ t:[0,60,280], th:0.6, ph:0.9, r:1600 },
+    parts:[['H','H × 2']],
+    how:[
+      '量<b>地面到第 1 层托条上沿</b>的高度（约 100），量 F1前、F1后 之间的距离（约 475）。',
+      '用劈 100 的那条截两块 H。<b>宁可长 1 mm 再修</b>，必须顶到地面，不能悬空。',
+      '立放在 F1前、F1后 之间，位置在宽度的三分之一和三分之二处。'
+    ],
+    tip:'这两块让第 1 层（最重的一层，约 43 kg）的重量直接落到地面，不经过托条和腿。' },
+
+  { phase:3, title:'第 1 层层板 C1 × 3 + 前沿条', cut:true, cam:{ t:[0,120,330], th:0.5, ph:0.8, r:2100 },
+    parts:[['C','C1 × 3'],['CS','C1条']],
+    how:[
+      '<b>量</b>第 1 层两片侧架内侧面之间的距离，截 3 块 C1 和一根 69 宽的前沿条 C1条，都<b>比量出来的短 2 mm</b>（约 954）。',
+      '从墙边开始铺：三块整板，最前面是 C1条，缝都是 10 mm（用一根 10 mm 钻头当间距规）。C1条 的前边正好和 F1前 的正面齐平，离墙 564。',
+      '预钻 4 mm + 沉头：每块整板两端各两颗拧进托条，C1条 两端各一颗（对准原厂边）。',
+      '最后面那块和 C1条，再沿裙板每隔约 120 拧一颗。中间两块往两个垫块 H 上各拧一颗。'
+    ],
+    tip:'螺丝尽量打在板面正对"筋"的位置：从端面看清筋在哪，用角尺画到板面上。' },
+
+  { phase:3, title:'第 2 层层板 C2 × 2', cut:true, cam:{ t:[0,794,230], th:0.5, ph:0.9, r:2000 },
+    parts:[['C','C2 × 2']],
+    how:[
+      '量第 2 层侧架之间的距离，截 2 块 C2，短 2 mm。',
+      '铺法同第 1 层：贴墙开始，缝 10 mm，两端进托条，前后两条边沿裙板每隔约 120 一颗。'
+    ] },
+
+  { phase:3, title:'第 3 层：F3前、F3后、C3', cut:true, cam:{ t:[0,1266,150], th:0.45, ph:0.9, r:1800 },
+    parts:[['F','F3前 · F3后'],['C','C3']],
+    how:[
+      '量出 F3前、F3后、C3。这一层<b>不用角码</b>。',
+      '先把 C3 放在托条上，再用快速夹把两根裙板夹在 C3 底下：一根贴墙边，一根贴前边，上沿顶紧 C3。',
+      '从 C3 上面往下拧螺丝：两端各两颗进托条，前后两条边每隔约 120 一颗进裙板。',
+      'C3 铺好后，顶挡条 D 的底边正好压在 C3 的后沿上。'
+    ] },
+
+  { phase:3, title:'人字撑中段螺丝', cam:{ t:[0,1150,40], th:PI*0.92, ph:1.3, r:2400 },
+    how:[
+      '转到背面。G左、G右 经过 F3后 的地方，各拧两颗 10G×50 螺丝。',
+      '螺丝尖会从裙板里侧冒出约 6 mm，在层板底下看不见。'
+    ] },
+
+  { phase:3, title:'立柱背后垫块 J 和防滑垫', cut:true, cam:{ t:[-250,650,60], th:-2.35, ph:1.3, r:2900 },
+    parts:[['J','J × 8']],
+    how:[
+      '每根 A 的背面，离地约 300 和 1100，各拧一组<b>两块叠起来的 J</b>（共 44 厚）。',
+      '每组外面贴一片防滑垫，这一面会顶着墙。',
+      '四个脚底（A 脚、B 脚）也各贴一片防滑垫。'
+    ] },
+
+  { phase:3, title:'靠墙、上盆', cam:{ t:[0,650,300], th:0.55, ph:1.2, r:3400 },
+    how:[
+      '把架子推回墙边，让 J 垫块顶住墙。',
+      '<b>先放大玉树</b>（第 1 层最前沿、第 2 层前沿外面，上面不挡），推一推顶部试稳。',
+      '再按层摆：第 1 层前排大盆、后排紫露草；第 2 层前排多肉、后排珍珠吊兰；第 3 层小盆。',
+      '重的放下面，高的放前沿，喜阴的放后排。上面两层各不超过 30 kg。'
+    ] },
+
+  { phase:3, title:'两周后：复紧所有螺栓', rehl:['b60','b40'], cam:{ t:[0,650,300], th:0.7, ph:1.2, r:3400 },
+    how:[
+      '塑木在螺栓夹紧的地方会慢慢被压扁一点，夹紧力会下降。',
+      '两周后把图中<b>所有螺栓的螺母</b>再拧紧一遍：贴紧后再转一点，不要压凹板面。',
+      '之后每年检查一次，顺便看看层板中间有没有明显下垂。'
+    ],
+    tip:'想用螺纹胶的话，就在这次复紧时点在托条的 24 颗螺栓上。' }
+];
+const N = STEPS.length;
+const PHASES = ['准备', '阶段一<br>两片侧架', '阶段二<br>连成框架', '阶段三<br>量了切、装完'];
+
+/* ================= 面板 ================= */
+const phasesEl = document.getElementById('phases'), bodyEl = document.getElementById('body');
+const chips = [];
+PHASES.forEach((pn, pi)=>{
+  const row = document.createElement('div'); row.className = 'phase';
+  row.innerHTML = `<div class="pn">${pn}</div>`;
+  const wrap = document.createElement('div'); wrap.className = 'chips';
+  STEPS.forEach((s, i)=>{
+    if (s.phase !== pi) return;
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.textContent = i + 1;
+    b.title = `第 ${i+1} 步：${s.title}`;
+    b.addEventListener('click', ()=> go(i));
+    wrap.appendChild(b); chips[i] = b;
+  });
+  row.appendChild(wrap); phasesEl.appendChild(row);
+});
+
+function hwSummary(stepNo, rehl){
+  const cnt = {};
+  PARTS.forEach(p=>{
+    if (p.kind !== 'hw') return;
+    const cur = p.step === stepNo || (rehl && rehl.includes(p.cat) && p.step <= stepNo);
+    if (cur) cnt[p.cat] = (cnt[p.cat] || 0) + 1;
+  });
+  return cnt;
+}
+function render(i){
+  const s = STEPS[i], n = i + 1;
+  const partsHtml = (s.parts || []).map(([k, label])=>{
+    const pi = PART_INFO[k] || {};
+    return `<div class="part"><span class="code">${label}</span><span class="nm">${pi.name || ''}${s.cut && k !== 'A' ? '<span class="tag">量了再切</span>' : ''}</span><span class="dm">${pi.dim || ''}</span></div>`;
+  }).join('');
+  const hw = hwSummary(n, s.rehl);
+  const order = ['b60','b40','br','sc','pad'];
+  const hwHtml = order.filter(k=>hw[k]).map(k=>{
+    const c = HWC[k], hex = '#' + c.color.toString(16).padStart(6,'0');
+    return `<div class="hwi"><span class="dot" style="background:${hex}"></span><span><b>${c.label}</b> · ${c.sub}</span><span class="n">× ${hw[k]}</span></div>`;
+  }).join('');
+  bodyEl.innerHTML = `
+    <div><div class="stepno">第 ${n} / ${N} 步</div><h2>${s.title}</h2></div>
+    ${partsHtml ? `<div class="sec"><h3>这一步的零件</h3><div class="parts">${partsHtml}</div></div>` : ''}
+    <div class="sec"><h3>这一步的五金</h3>${hwHtml ? `<div class="hw">${hwHtml}</div>` : '<div class="none">这一步不用五金。</div>'}</div>
+    <div class="sec"><h3>怎么做</h3><ol class="how">${s.how.map(h=>`<li>${h}</li>`).join('')}</ol></div>
+    ${s.note ? `<div class="note">${s.note}</div>` : ''}
+    ${s.tip ? `<div class="tip">${s.tip}</div>` : ''}`;
+  bodyEl.scrollTop = 0;
+  chips.forEach((c, k)=>{
+    c.classList.toggle('done', k < i);
+    if (k === i){ c.setAttribute('aria-current','step'); c.scrollIntoView({ block:'nearest', inline:'center' }); }
+    else c.removeAttribute('aria-current');
+  });
+  document.getElementById('prev').disabled = i === 0;
+  const nx = document.getElementById('next');
+  nx.disabled = i === N - 1;
+  nx.textContent = i === N - 1 ? '完工' : '下一步 →';
+}
+
+/* ================= 3D 状态 ================= */
+let cur = 0;
+const optLabels = document.getElementById('optLabels'), optGhost = document.getElementById('optGhost');
+function apply3D(){
+  const n = cur + 1, s = STEPS[cur];
+  PARTS.forEach(p=>{
+    const vis = p.step <= n && (p.until == null || n <= p.until);
+    p.obj.visible = vis;
+    const isCur = p.step === n || (s.rehl && s.rehl.includes(p.cat) && p.step <= n);
+    if (p.kind === 'wood'){
+      const set = isCur ? WOOD.hl : WOOD[p.set];
+      if (p.obj.userData.extrude) p.obj.material = set.face;
+      else { const [w,h,d] = p.obj.userData.dims; p.obj.material = matsFor(w,h,d,set); }
+    } else if (p.kind === 'hw'){
+      setMat(p.obj, ()=> isCur ? HWC[p.cat].mat : (p.cat === 'pad' ? padPast : steelPast));
+    }
+    if (p.label) p.label.visible = vis && isCur && optLabels.checked;
+  });
+  const ghost = optGhost.checked;
+  pastMats.forEach(m=>{ m.transparent = ghost; m.opacity = ghost ? 0.22 : 1; m.depthWrite = !ghost; m.needsUpdate = true; });
+  wall.visible = n >= 20;
+  layout.visible = n === 1;
+  grid.visible = n !== 1 ? true : true;
+}
+
+/* ================= 相机 ================= */
+const camState = { tx:0, ty:650, tz:300, th:0.55, ph:1.2, r:3300 };
+/* 每一步的相机距离是按 1040×900 的画布（宽高比 1.16、视角 34°）调的。
+   画布变窄或视角变了，就按比例把相机拉远，保证看到的范围不变。 */
+const REF_ASPECT = 1.16, REF_TAN = Math.tan(17 * Math.PI/180);
+function fitScale(){
+  const t = Math.tan(cam.fov/2 * Math.PI/180);
+  return (REF_TAN / t) * Math.max(1, REF_ASPECT / cam.aspect);
+}
+let tween = null;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function place(){
+  const c = camState;
+  c.ph = Math.max(0.08, Math.min(2.8, c.ph));          // 超过 π/2 就是从地面以下往上看
+  const r = c.r * fitScale();
+  cam.position.set(c.tx + r*Math.sin(c.ph)*Math.sin(c.th), c.ty + r*Math.cos(c.ph), c.tz + r*Math.sin(c.ph)*Math.cos(c.th));
+  cam.lookAt(c.tx, c.ty, c.tz);
+  const behind = (cam.position.z < 0);
+  wallMat.opacity = behind ? 0.12 : 1; wallMat.depthWrite = !behind;
+  const below = cam.position.y <= 0;
+  ground.visible = !below;
+  grid.material.transparent = below; grid.material.opacity = below ? 0.25 : 1;
+}
+function flyTo(c){
+  let th = c.th;
+  while (th - camState.th > PI) th -= 2*PI;
+  while (th - camState.th < -PI) th += 2*PI;
+  const to = { tx:c.t[0], ty:c.t[1], tz:c.t[2], th, ph:c.ph, r:c.r };
+  if (reduce){ Object.assign(camState, to); place(); return; }
+  tween = { from:Object.assign({}, camState), to, t0:performance.now(), dur:750 };
+}
+function stepTween(now){
+  if (!tween) return;
+  let k = Math.min(1, (now - tween.t0) / tween.dur);
+  const e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
+  Object.keys(tween.to).forEach(key=> camState[key] = tween.from[key] + (tween.to[key] - tween.from[key]) * e);
+  place();
+  if (k >= 1) tween = null;
+}
+
+function go(i){
+  cur = Math.max(0, Math.min(N - 1, i));
+  render(cur); apply3D(); flyTo(STEPS[cur].cam);
+}
+document.getElementById('prev').addEventListener('click', ()=> go(cur - 1));
+document.getElementById('next').addEventListener('click', ()=> go(cur + 1));
+optLabels.addEventListener('change', apply3D);
+optGhost.addEventListener('change', apply3D);
+window.addEventListener('keydown', e=>{
+  if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') { go(cur + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft')  { go(cur - 1); e.preventDefault(); }
+});
+
+/* ---- 鼠标 / 触摸 ---- */
+const el = renderer.domElement;
+let drag = null, last = {x:0,y:0}, pinch = 0;
+el.addEventListener('contextmenu', e=> e.preventDefault());
+el.addEventListener('pointerdown', e=>{ tween = null; drag = (e.button === 2 || e.shiftKey) ? 'pan' : 'rot'; last = {x:e.clientX, y:e.clientY}; el.setPointerCapture(e.pointerId); });
+el.addEventListener('pointerup', ()=> drag = null);
+el.addEventListener('pointercancel', ()=> drag = null);
+el.addEventListener('pointermove', e=>{
+  if (!drag || pinch) return;
+  const dx = e.clientX - last.x, dy = e.clientY - last.y; last = {x:e.clientX, y:e.clientY};
+  if (drag === 'rot'){ camState.th -= dx*0.006; camState.ph -= dy*0.006; }
+  else {
+    const s = camState.r * 0.0012;
+    const r = new T.Vector3().setFromMatrixColumn(cam.matrix, 0);
+    const u = new T.Vector3().setFromMatrixColumn(cam.matrix, 1);
+    camState.tx += -dx*s*r.x + dy*s*u.x; camState.ty += -dx*s*r.y + dy*s*u.y; camState.tz += -dx*s*r.z + dy*s*u.z;
+  }
+  place();
+});
+el.addEventListener('wheel', e=>{ e.preventDefault(); tween = null; camState.r = Math.max(500, Math.min(9000, camState.r*(1 + Math.sign(e.deltaY)*0.08))); place(); }, { passive:false });
+el.addEventListener('touchmove', e=>{
+  if (e.touches.length !== 2) return;
+  const a = e.touches[0], b = e.touches[1];
+  const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  if (pinch){ tween = null; camState.r = Math.max(500, Math.min(9000, camState.r * (pinch/d))); place(); }
+  pinch = d;
+}, { passive:true });
+el.addEventListener('touchend', ()=> pinch = 0);
+
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  cam.aspect = w/h; cam.fov = w < 600 ? 48 : 34;
+  cam.updateProjectionMatrix(); renderer.setSize(w, h);
+  if (typeof place === 'function') place();
+}
+new ResizeObserver(resize).observe(stage);
+window.addEventListener('resize', resize);
+resize();
+Object.assign(camState, { tx:STEPS[0].cam.t[0], ty:STEPS[0].cam.t[1], tz:STEPS[0].cam.t[2], th:STEPS[0].cam.th, ph:STEPS[0].cam.ph, r:STEPS[0].cam.r });
+go(0); place();
+(function loop(now){ requestAnimationFrame(loop); stepTween(now || performance.now()); renderer.render(scene, cam); })();
+})();
+</script>
+
+</body></html>
